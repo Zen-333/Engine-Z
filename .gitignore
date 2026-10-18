@@ -1,4 +1,11 @@
-CMakeLists.txt.user
+#Build output
+build/
+out/
+
+# Visual Studio personal files
+.vs/
+
+# Files CMake generates
 CMakeCache.txt
 CMakeFiles
 CMakeScripts
@@ -9,4 +16,7 @@ install_manifest.txt
 compile_commands.json
 CTestTestfile.cmake
 _deps
+
+# Personal settings
+CMakeLists.txt.user
 CMakeUserPresets.json
