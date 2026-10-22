@@ -63,7 +63,7 @@ Games depend on the engine. The engine never depends on a game.
 * Targets:
   * `SDL3`: SDL's static library, created by SDL's own CMake files and used through the `SDL3::SDL3` target.
   * `EngineZ`: static library, built from the `.cpp` files listed in `Engine/CMakeLists.txt`. Its include folder `Source` is `PUBLIC`, so anything that links `EngineZ` can use `<EngineZ/...>` includes. It links `SDL3::SDL3` as `PRIVATE`, so only engine `.cpp` files can include SDL headers. Games cannot, and the compiler enforces this.
-  * `Sandbox`: executable, links `EngineZ` as `PRIVATE`
+  * `Sandbox`: executable, links `EngineZ` as `PRIVATE`.
 
 How to extend it:
 
@@ -92,7 +92,7 @@ cmake --build build
 ```
 
 On Linux, SDL needs some system packages (X11 or Wayland development libraries) before it configures. 
-o#The list is in `Engine/ThirdParty/SDL3/docs/README-linux.md`.
+#The list is in `Engine/ThirdParty/SDL3/docs/README-linux.md`.
 
 Build folders:
 
