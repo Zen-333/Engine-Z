@@ -12,22 +12,23 @@ namespace EngineZ
 		if(!SDL_Init(SDL_INIT_VIDEO))
 		{
 			LogError(SDL_GetError());
+			m_bCloseRequested = true;
 			return;
 		}
 
-		mWindow = SDL_CreateWindow(WindowTitle, Width, Height, SDL_WINDOW_OPENGL);
-		if(mWindow == nullptr)
+		m_Window = SDL_CreateWindow(WindowTitle, Width, Height, SDL_WINDOW_OPENGL);
+		if(m_Window == nullptr)
 		{
 			LogError(SDL_GetError());
-			mbCloseRequested = true;
+			m_bCloseRequested = true;
 		}
 	}
 
 	Window::~Window()
 	{
-		if(mWindow != nullptr)
+		if(m_Window != nullptr)
 		{
-			SDL_DestroyWindow(mWindow);
+			SDL_DestroyWindow(m_Window);
 		}
 		SDL_Quit();
 	}
@@ -39,11 +40,11 @@ namespace EngineZ
 		{
 			if(Event.type == SDL_EVENT_QUIT )
 			{
-				mbCloseRequested = true;
+				m_bCloseRequested = true;
 			}
 			else if(Event.type == SDL_EVENT_KEY_DOWN && Event.key.key == SDLK_ESCAPE)
 			{
-				mbCloseRequested = true;
+				m_bCloseRequested = true;
 			}
 		}
 	
@@ -51,7 +52,7 @@ namespace EngineZ
 
 	bool Window::ShouldClose() const
 	{
-		return mbCloseRequested;
+		return m_bCloseRequested;
 	}
 
 }

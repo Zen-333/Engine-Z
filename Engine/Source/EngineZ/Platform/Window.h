@@ -1,5 +1,4 @@
 #pragma once
-#include <string>
 
 struct SDL_Window;
 
@@ -20,8 +19,8 @@ namespace EngineZ
 
 	private:
 
-		SDL_Window* mWindow = nullptr;
-		bool mbCloseRequested = false;
+		SDL_Window* m_Window = nullptr;
+		bool m_bCloseRequested = false;
 
 	};
 
