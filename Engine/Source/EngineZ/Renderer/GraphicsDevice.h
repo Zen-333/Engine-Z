@@ -14,5 +14,8 @@ namespace EngineZ
 		virtual bool BeginFrame(const Color& ClearColor) = 0;
 		virtual void EndFrame() = 0;
 
+	protected:
+
+		bool m_bHasBeenInitialized = false;
 	};
 }
