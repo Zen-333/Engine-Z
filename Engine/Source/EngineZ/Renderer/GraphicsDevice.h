@@ -1,8 +1,11 @@
 #pragma once
+#include <memory>
 
 namespace EngineZ 
 {
 	struct Color { float R; float G; float B; float A; };
+
+	class Window;
 
 	class GraphicsDevice
 	{
@@ -14,8 +17,8 @@ namespace EngineZ
 		virtual bool BeginFrame(const Color& ClearColor) = 0;
 		virtual void EndFrame() = 0;
 
-	protected:
 
-		bool m_bHasBeenInitialized = false;
 	};
+
+	std::unique_ptr<GraphicsDevice> CreateGraphicsDevice(Window& InWindow);
 }

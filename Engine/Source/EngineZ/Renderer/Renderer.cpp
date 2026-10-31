@@ -4,24 +4,9 @@
 
 namespace EngineZ
 {
-	Renderer::Renderer(const GPUDevicesType GPUDeviceType, Window* InWindow)
+	Renderer::Renderer(Window& InWindow) : m_Device(CreateGraphicsDevice(InWindow))
 	{
-		if(InWindow == nullptr)
-		{
-			LogError("Window provided to renderer is null.");
-			return;
-		}
 
-		switch (GPUDeviceType)
-		{
-			case GPU_DEVICE_SDL:
-				CreateSDLGPUDevice(InWindow);
-				break;
-			case GPU_DEVICE_NONE:
-				LogError("No GPU Device type provided to renderer.");
-				return;
-		}
-		
 	}
 
 	Renderer::~Renderer()
@@ -29,8 +14,4 @@ namespace EngineZ
 
 	}
 
-	void Renderer::CreateSDLGPUDevice(Window* InWindow)
-	{
-		m_SDLGPUDevice.Init(InWindow);
-	}
 }

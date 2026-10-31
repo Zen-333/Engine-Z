@@ -6,36 +6,45 @@
 
 namespace EngineZ
 {
-	SDLGPUDevice::SDLGPUDevice(Window* InWindow)
+	std::unique_ptr<GraphicsDevice> SDLGPUDevice::Create(Window& InWindow)
 	{
-		Init(InWindow);
-	}
+		#ifdef NDEBUG
+				const bool bDebugMode = false;
+		#else
+				const bool bDebugMode = true;
+		#endif
 
-	void SDLGPUDevice::Init(Window* InWindow)
-	{
-		if (m_bHasBeenInitialized) return;
-
-		m_Device = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV, true, NULL);
-
-		if (m_Device == nullptr)
+		SDL_GPUDevice* Device = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV, bDebugMode, nullptr);
+		if(Device == nullptr)
 		{
-			Log("SDL GPU Device couldn't be created");
-			return;
+			LogError(SDL_GetError());
+			return nullptr;
 		}
 
-		SDL_ClaimWindowForGPUDevice(m_Device, InWindow->GetSDLWindow());
-		m_bHasBeenInitialized = true;
+		SDL_Window* WindowHandle = InWindow.GetSDLWindow();
+		if (!SDL_ClaimWindowForGPUDevice(Device, WindowHandle))
+		{
+			Log(SDL_GetError());
+			SDL_DestroyGPUDevice(Device);
+			return nullptr;
+		}
 
 		Log("SDL GPU Device created");
+
+		return std::unique_ptr<GraphicsDevice>(new SDLGPUDevice(Device, WindowHandle));
+
+	}
+
+	SDLGPUDevice::SDLGPUDevice(SDL_GPUDevice* InDevice, SDL_Window* InWindow) : m_Device(InDevice), m_Window(InWindow)
+	{
+
 	}
 
 	SDLGPUDevice::~SDLGPUDevice()
 	{
-		if(m_Device != nullptr)
-		{
-			SDL_DestroyGPUDevice(m_Device);
-			Log("SDL GPU Device Destroyed!");
-		}
+		SDL_ReleaseWindowFromGPUDevice(m_Device, m_Window);
+		SDL_DestroyGPUDevice(m_Device);
+		Log("SDL GPU Device destroyed");
 	}
 
 	bool SDLGPUDevice::BeginFrame(const Color& ClearColor)

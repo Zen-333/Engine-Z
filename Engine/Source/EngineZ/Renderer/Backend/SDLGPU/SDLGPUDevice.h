@@ -2,26 +2,27 @@
 #include <EngineZ/Renderer/GraphicsDevice.h>
 
 struct SDL_GPUDevice;
+struct SDL_Window;
 
 namespace EngineZ
 {
-	class Window;
 
 	class SDLGPUDevice final : public GraphicsDevice
 	{
 
 	public:
-		SDLGPUDevice() = default;
-		SDLGPUDevice(Window* InWindow);
-		~SDLGPUDevice() override;
+		static std::unique_ptr<GraphicsDevice> Create(Window& InWindow);
 
-		void Init(Window* InWindow);
+		~SDLGPUDevice() override;
 
 		bool BeginFrame(const Color& ClearColor) override;
 		void EndFrame() override;
 
 	private:
 
+		SDLGPUDevice(SDL_GPUDevice* InDevice, SDL_Window* InWindow);
+
 		SDL_GPUDevice* m_Device = nullptr;
+		SDL_Window* m_Window = nullptr;
 	};
 }

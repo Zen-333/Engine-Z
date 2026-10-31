@@ -21,7 +21,10 @@ namespace EngineZ
 		{
 			LogError(SDL_GetError());
 			m_bCloseRequested = true;
+			return;
 		}
+
+		Log("SDL Window created");
 	}
 
 	Window::~Window()
@@ -31,6 +34,8 @@ namespace EngineZ
 			SDL_DestroyWindow(m_Window);
 		}
 		SDL_Quit();
+
+		Log("SDL Window destroyed");
 	}
 
 	void Window::PollEvents()
