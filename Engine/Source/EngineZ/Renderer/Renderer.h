@@ -13,6 +13,9 @@ namespace EngineZ
 		explicit Renderer(Window& InWindow);
 		~Renderer();
 
+		bool BeginFrame(const Color& ClearColor);
+		void EndFrame();
+
 	private:
 
 		std::unique_ptr<GraphicsDevice> m_Device;

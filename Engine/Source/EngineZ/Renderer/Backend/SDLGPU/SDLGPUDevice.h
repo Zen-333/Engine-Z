@@ -3,6 +3,8 @@
 
 struct SDL_GPUDevice;
 struct SDL_Window;
+struct SDL_GPUCommandBuffer;
+struct SDL_GPURenderPass;
 
 namespace EngineZ
 {
@@ -24,5 +26,7 @@ namespace EngineZ
 
 		SDL_GPUDevice* m_Device = nullptr;
 		SDL_Window* m_Window = nullptr;
+		SDL_GPUCommandBuffer* m_CommandBuffer = nullptr;
+		SDL_GPURenderPass* m_RenderPass = nullptr;
 	};
 }

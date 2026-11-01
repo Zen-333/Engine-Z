@@ -14,4 +14,14 @@ namespace EngineZ
 
 	}
 
+	bool Renderer::BeginFrame(const Color& ClearColor)
+	{
+		return m_Device->BeginFrame(ClearColor);
+	}
+
+	void Renderer::EndFrame()
+	{
+		m_Device->EndFrame();
+	}
+
 }

@@ -7,7 +7,7 @@
 
 namespace EngineZ
 {
-	static std::string ShaderFormatsToString(SDL_GPUShaderFormat Format)
+	static std::string ShaderFormatsToString(const SDL_GPUShaderFormat Format)
 	{
 		struct FormatName 
 		{
@@ -92,12 +92,59 @@ namespace EngineZ
 
 	bool SDLGPUDevice::BeginFrame(const Color& ClearColor)
 	{
-		return false;
+		m_CommandBuffer = SDL_AcquireGPUCommandBuffer(m_Device);
+
+		if(m_CommandBuffer == nullptr)
+		{
+			LogError(SDL_GetError());
+			return false;
+		}
+
+		SDL_GPUTexture* SwapChainTexture = nullptr;
+		Uint32 Width, Height;
+
+		if(!SDL_WaitAndAcquireGPUSwapchainTexture(m_CommandBuffer, m_Window, &SwapChainTexture, &Width, &Height))
+		{
+			LogError(SDL_GetError());
+			SDL_SubmitGPUCommandBuffer(m_CommandBuffer);
+			m_CommandBuffer = nullptr;
+			return false;
+		}
+
+		if(SwapChainTexture == nullptr)
+		{
+			SDL_SubmitGPUCommandBuffer(m_CommandBuffer);
+			m_CommandBuffer = nullptr;
+			return false;
+		}
+
+		SDL_GPUColorTargetInfo ColorTargetInfo{};
+		ColorTargetInfo.clear_color = { ClearColor.R, ClearColor.G, ClearColor.B, ClearColor.A };
+		ColorTargetInfo.load_op = SDL_GPU_LOADOP_CLEAR;
+		ColorTargetInfo.store_op = SDL_GPU_STOREOP_STORE;
+		ColorTargetInfo.texture = SwapChainTexture;
+
+		m_RenderPass = SDL_BeginGPURenderPass(m_CommandBuffer, &ColorTargetInfo, 1, NULL);
+
+		if(m_RenderPass == nullptr)
+		{
+			LogError(SDL_GetError());
+			SDL_SubmitGPUCommandBuffer(m_CommandBuffer);
+			m_CommandBuffer = nullptr;
+			return false;
+		}
+		return true;
 	}
 
 	void SDLGPUDevice::EndFrame()
 	{
+		if (m_RenderPass == nullptr) return;
 
+		SDL_EndGPURenderPass(m_RenderPass);
+		SDL_SubmitGPUCommandBuffer(m_CommandBuffer);
+
+		m_RenderPass = nullptr;
+		m_CommandBuffer = nullptr;
 	}
 
 }
