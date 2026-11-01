@@ -16,7 +16,8 @@ namespace EngineZ
 			return;
 		}
 
-		m_Window = SDL_CreateWindow(WindowTitle, Width, Height, SDL_WINDOW_OPENGL);
+		SDL_WindowFlags WindowFlags = SDL_WINDOW_RESIZABLE;
+		m_Window = SDL_CreateWindow(WindowTitle, Width, Height, WindowFlags);
 		if(m_Window == nullptr)
 		{
 			LogError(SDL_GetError());
@@ -25,6 +26,7 @@ namespace EngineZ
 		}
 
 		Log("SDL Window created");
+
 	}
 
 	Window::~Window()

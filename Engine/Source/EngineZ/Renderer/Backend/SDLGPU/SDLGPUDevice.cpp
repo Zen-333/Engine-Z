@@ -92,6 +92,11 @@ namespace EngineZ
 
 	bool SDLGPUDevice::BeginFrame(const Color& ClearColor)
 	{
+		// Known: the picture freezes while a window border is held (Windows runs its own loop). 
+		// Fix later with SDL_AddEventWatch and SDL_EVENT_WINDOW_EXPOSED when the engine owns the main loop.
+
+		// Viewport and projection handling arrive in M4
+
 		m_CommandBuffer = SDL_AcquireGPUCommandBuffer(m_Device);
 
 		if(m_CommandBuffer == nullptr)
