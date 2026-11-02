@@ -1,5 +1,6 @@
 #pragma once
 #include <EngineZ/Renderer/GraphicsDevice.h>
+#include <SDL3/SDL.h>
 
 namespace EngineZ
 {

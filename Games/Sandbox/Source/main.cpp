@@ -7,6 +7,11 @@
 
 int main()
 {
+	#ifdef NDEBUG
+		EngineZ::Log("Build: Release");
+	#else
+		EngineZ::Log("Build: Debug");
+	#endif
 
 	EngineZ::Window MainWindow("Sandbox Game", 640, 480);
 	EngineZ::Renderer MainRenderer(MainWindow);
