@@ -129,7 +129,7 @@ namespace EngineZ
 		ColorTargetInfo.store_op = SDL_GPU_STOREOP_STORE;
 		ColorTargetInfo.texture = SwapChainTexture;
 
-		m_RenderPass = SDL_BeginGPURenderPass(m_CommandBuffer, &ColorTargetInfo, 1, NULL);
+		m_RenderPass = SDL_BeginGPURenderPass(m_CommandBuffer, &ColorTargetInfo, 1, nullptr);
 
 		if(m_RenderPass == nullptr)
 		{
