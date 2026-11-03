@@ -42,7 +42,7 @@ Engine-Z/
 * `Engine/` holds all engine code. `Source/` is the include root, and the `EngineZ/` folder inside it becomes part of every include path.
 * `Engine/ThirdParty/` holds third party libraries, one folder per library, plus a `CMakeLists.txt` that configures and adds them.
 * `Games/` holds one folder per game. Each game keeps its code in its own `Source/` folder so assets can sit beside it later.
-* `Docs/` holds the documentation for the engine and the logo.
+* `Docs/` holds the documentation for the engine.
 
 ## The dependency rule
 

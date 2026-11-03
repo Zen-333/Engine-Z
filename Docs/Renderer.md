@@ -42,7 +42,7 @@ These rules are checked on every commit by `.githooks/pre-commit`.
 2. Claims the window with `SDL_ClaimWindowForGPUDevice`. SDL starts the swapchain with SDR colour and VSync on.
 3. Logs the driver and the shader formats the device accepts.
 
-Because only SPIR-V is offered, SDL can only choose its Vulkan backend. This was confirmed on the development machine: the driver is `vulkan` and the formats are SPIR-V. Forcing `direct3d12` fails with "unsupported", because Direct3D 12 needs DXBC or DXIL shaders. macOS is not supported yet, because Metal needs MSL shaders.
+Because only SPIR-V is offered, SDL can only choose its Vulkan backend. This was confirmed on the development machine: the driver is `vulkan` and the formats are SPIR-V. macOS is not supported yet, because Metal needs MSL shaders.
 
 ## A frame
 
@@ -77,7 +77,6 @@ while (!MainWindow.ShouldClose())
 * The picture freezes while a window border is held. Windows runs its own loop during a resize. The fix is `SDL_AddEventWatch` with `SDL_EVENT_WINDOW_EXPOSED`, once the engine owns the main loop.
 * No shaders or drawing yet. The shader workflow (SDL_shadercross, and whether to ship DXIL as well as SPIR-V) is decided in the next milestone.
 * Viewport and projection handling arrive with the first drawing.
-* Direct3D 12 and Metal are not enabled, see above.
 
 ## Adding a backend
 
