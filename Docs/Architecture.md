@@ -1,33 +1,38 @@
 # Engine Z Architecture
 
-Last updated: 25 October 2026
+Last updated: 3 November 2026
 
-This document describes how the Engine Z codebase is organised and the rules it follows. To build the project, see the root [README](../README.md). To add code, games or libraries, see [Extending.md](Extending.md).
+This document describes how the Engine Z codebase is organised and the rules it follows. To build the project, see the root [README](../README.md). To add code, games or libraries, see [Extending.md](Extending.md). For how rendering is structured, see [Renderer.md](Renderer.md).
 
 ## Overview
 
 Engine Z is a C++20 game engine for 2D and 3D games.
 It is built as a static library called `EngineZ`.
 Games are separate programs that live under `Games/` and attach to that library.
-The engine uses SDL3 internally.
+The engine uses SDL3 internally, for the window and for GPU rendering (SDL_GPU).
 SDL is vendored (copied into the repo) and built as a static library together with the engine.
 
 Current contents:
 
 * `Core/Log`: `EngineZ::Log(std::string_view)` prints `[Engine Z] Log: <message>` and `EngineZ::LogError(std::string_view)` prints `[Engine Z] ERROR: <message>`, both to standard output.
 * `Platform/Window`: owns the SDL window and event polling. The game calls `PollEvents()` once per frame and checks `ShouldClose()`. SDL stays inside `Window.cpp`.
-* `ThirdParty/SDL3`: SDL 3.4.18, used by `Platform/Window`.
-* `Sandbox`: a small test game that calls the engine.
+* `Renderer`: `Renderer` is what games call (`BeginFrame`, `EndFrame`). It owns a `GraphicsDevice`, an interface implemented by `Backend/SDLGPU`. Today it clears the window every frame. See [Renderer.md](Renderer.md).
+* `ThirdParty/SDL3`: SDL 3.4.18, used by `Platform/Window` and the SDL_GPU backend.
+* `Sandbox`: a small test game that opens a window and clears it every frame.
 
 ## Repository layout
 
 ```
 Engine-Z/
   README.md
+  .githooks/         commit checks for the architecture rules
   Engine/
     Source/EngineZ/
       Core/          logging and other foundation code
       Platform/      window and OS facing code (wraps SDL)
+      Renderer/      what games call, plus the GraphicsDevice interface
+        Backend/
+          SDLGPU/    the only place SDL_GPU is used
     ThirdParty/      vendored libraries (SDL3)
   Games/
     Sandbox/         test game
@@ -45,14 +50,19 @@ Games depend on the engine. The engine never depends on a game.
 
 * Engine code never includes a file from `Games/` and never refers to a game by name.
 * No `..` appears in any include path. Every include is an engine header written as `<EngineZ/...>`, a standard library header, or a third party header.
+* SDL appears only in `Platform/` and `Renderer/Backend/SDLGPU/`. No header under `Renderer/` outside `Backend/` mentions SDL.
 
-Inside the engine, dependencies only point down. `Platform` uses `Core`, and `Core` knows nothing about `Platform`:
+Inside the engine, dependencies only point down. `Platform` and `Renderer` use `Core`, and `Core` knows nothing about them:
 
 ```
 Games/Sandbox  ->  EngineZ
-                     Platform  ->  Core
-                     Platform  ->  SDL3 (private)
+                     Renderer  ->  GraphicsDevice (interface)
+                     Renderer/Backend/SDLGPU  implements GraphicsDevice
+                         ->  Platform, Core, SDL3 (private)
+                     Platform  ->  Core, SDL3 (private)
 ```
+
+The include and SDL rules above are checked on every commit by `.githooks/pre-commit`. Enable it once per clone with `git config core.hooksPath .githooks`.
 
 ## Build system
 
@@ -82,7 +92,7 @@ Windows is the primary platform. Linux and macOS are kept possible:
 * Use `std::filesystem` for paths and write paths with forward slashes.
 * Any SIMD code needs a plain scalar fallback, because Apple Silicon is ARM.
 * The code stays standard C++ with no compiler extensions.
-* macOS is limited to OpenGL 4.1, so the renderer targets OpenGL 4.1 core as its baseline.
+* Rendering uses SDL_GPU, which runs on Vulkan, Direct3D 12 or Metal. The device is created with SPIR-V shaders only, so it runs on Vulkan (Windows and Linux). macOS needs Metal shaders and is not supported yet.
 
 ## Third party libraries
 
@@ -102,4 +112,4 @@ Current libraries:
 
 * Engine modules are small and independent. A module may use modules below it, never above it.
 * Platform specific code is isolated in one place.
-* Rendering and physics sit behind engine interfaces, not behind a library's own types.
+* Rendering and physics sit behind engine interfaces, not behind a library's own types. The renderer already does this through `GraphicsDevice`.

@@ -1,12 +1,13 @@
 # Extending Engine Z
 
-How to add code, games and libraries. 
+How to add code, games and libraries.
 For how the codebase is organised, see [Architecture.md](Architecture.md).
 
 ## Adding code
 
 * **New engine source file:** create it under `Engine/Source/EngineZ/<Module>/` and add the `.cpp` file to the `add_library(EngineZ STATIC ...)` list in `Engine/CMakeLists.txt`. Headers are not listed. CMake does not scan folders, so a `.cpp` file missing from the list is silently not built.
 * **New engine module:** a new folder under `Engine/Source/EngineZ/`, handled the same way as a new file.
+* **New graphics backend:** see [Renderer.md](Renderer.md).
 * **New game:** create `Games/<Name>/` with a `CMakeLists.txt` (`add_executable` and `target_link_libraries(<Name> PRIVATE EngineZ)`) and a `Source/` folder, then add `add_subdirectory(Games/<Name>)` to the root `CMakeLists.txt`.
 
 ## Adding or upgrading a third party library

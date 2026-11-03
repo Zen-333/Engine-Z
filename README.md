@@ -2,10 +2,11 @@
 
 ![Engine Z logo](Engine-Z-Logo.jpg)
 
-Engine Z is a C++20 game engine for 2D and 3D games, built with CMake. 
+Engine Z is a C++20 game engine for 2D and 3D games, built with CMake.
 Windows is the primary platform, with Linux and macOS kept possible.
 
 * [Architecture](Docs/Architecture.md): how the codebase is organised and the rules it follows.
+* [Renderer](Docs/Renderer.md): how rendering is structured.
 * [Extending Engine Z](Docs/Extending.md): how to add code, games and libraries.
 
 ## Building
@@ -34,3 +35,11 @@ Build folders:
 * `build/` is used by the command line. `out/` is Visual Studio's default. Both are generated, ignored by Git, and safe to delete.
 * A build folder remembers the generator it was configured with. Do not share one folder between tools, and delete it after changing generator or Visual Studio version.
 * If Visual Studio does not configure CMake when the folder opens, close it, delete the hidden `.vs` folder in the repo, and reopen the folder.
+
+## Git hooks
+
+Run this once after cloning, so the architecture checks run before every commit:
+
+```
+git config core.hooksPath .githooks
+```
