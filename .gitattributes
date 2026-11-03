@@ -1,4 +1,4 @@
 # Auto detect text files and perform LF normalization
 * text=auto
 
-.githooks/* text eol=1f
+.githooks/* text eol=lf
