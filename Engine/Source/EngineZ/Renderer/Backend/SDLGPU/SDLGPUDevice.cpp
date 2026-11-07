@@ -48,6 +48,19 @@ namespace EngineZ
 		
 	}
 
+	struct Vertex
+	{
+		float X, Y, Z;
+		float R, G, B, A;
+	};
+
+	static Vertex Vertices[]
+	{
+		{0.0f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f},    // Top vertex
+		{-0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f},  // Bottom left vertex
+		{0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f}    // Bottom right vertex
+	};
+
 	std::unique_ptr<GraphicsDevice> SDLGPUDevice::Create(Window& InWindow)
 	{
 		#ifdef NDEBUG
@@ -74,17 +87,104 @@ namespace EngineZ
 		Log("SDL GPU Device created");
 		Log(std::string("GPU driver: ") + SDL_GetGPUDeviceDriver(Device));
 		Log("Shader formats: " + ShaderFormatsToString(SDL_GetGPUShaderFormats(Device)));
-		return std::unique_ptr<GraphicsDevice>(new SDLGPUDevice(Device, WindowHandle));
+
+		std::unique_ptr<SDLGPUDevice> NewDevice(new SDLGPUDevice(Device, WindowHandle));
+
+		if(!NewDevice->CreateVertexBuffer())
+		{
+			LogError("Vertex buffer couldn't be created");
+			return nullptr;
+		}
+		Log("Vertex buffer created");
+		return NewDevice;
 
 	}
 
 	SDLGPUDevice::SDLGPUDevice(SDL_GPUDevice* InDevice, SDL_Window* InWindow) : m_Device(InDevice), m_Window(InWindow)
 	{
+	}
 
+	bool SDLGPUDevice::CreateVertexBuffer()
+	{
+		SDL_GPUBufferCreateInfo BufferInfo{};
+		BufferInfo.size = sizeof(Vertices);
+		BufferInfo.usage = SDL_GPU_BUFFERUSAGE_VERTEX;
+		m_VertexBuffer = SDL_CreateGPUBuffer(m_Device, &BufferInfo);
+		if(m_VertexBuffer == nullptr)
+		{
+			LogError(SDL_GetError());
+			return false;
+		}
+
+		SDL_GPUTransferBufferCreateInfo TransferInfo{};
+		TransferInfo.size = sizeof(Vertices);
+		TransferInfo.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
+		m_TransferBuffer = SDL_CreateGPUTransferBuffer(m_Device, &TransferInfo);
+		if (m_TransferBuffer == nullptr)
+		{
+			LogError(SDL_GetError());
+			return false;
+		}
+
+		void* Data = SDL_MapGPUTransferBuffer(m_Device, m_TransferBuffer, false);
+		if (Data == nullptr)
+		{
+			LogError(SDL_GetError());
+			return false;
+		}
+		SDL_memcpy(Data, Vertices, sizeof(Vertices));
+
+		SDL_UnmapGPUTransferBuffer(m_Device, m_TransferBuffer);
+
+		SDL_GPUCommandBuffer* CommandBuffer = SDL_AcquireGPUCommandBuffer(m_Device);
+		if (CommandBuffer == nullptr)
+		{
+			LogError(SDL_GetError());
+			return false;
+		}
+
+		SDL_GPUCopyPass* CopyPass = SDL_BeginGPUCopyPass(CommandBuffer);
+		if (CopyPass == nullptr)
+		{
+			LogError(SDL_GetError());
+			SDL_CancelGPUCommandBuffer(CommandBuffer);
+			return false;
+		}
+
+		SDL_GPUTransferBufferLocation Location{};
+		Location.transfer_buffer = m_TransferBuffer;
+		Location.offset = 0;
+
+		SDL_GPUBufferRegion Region{};
+		Region.buffer = m_VertexBuffer;
+		Region.size = sizeof(Vertices);
+		Region.offset = 0;
+
+		SDL_UploadToGPUBuffer(CopyPass, &Location, &Region, true);
+
+		SDL_EndGPUCopyPass(CopyPass);
+
+		if(!SDL_SubmitGPUCommandBuffer(CommandBuffer))
+		{
+			LogError(SDL_GetError());
+			return false;
+		}
+		SDL_ReleaseGPUTransferBuffer(m_Device, m_TransferBuffer);
+		m_TransferBuffer = nullptr;
+
+		return true;
 	}
 
 	SDLGPUDevice::~SDLGPUDevice()
 	{
+		if(m_VertexBuffer)
+		{
+			SDL_ReleaseGPUBuffer(m_Device, m_VertexBuffer);
+		}
+		if(m_TransferBuffer)
+		{
+			SDL_ReleaseGPUTransferBuffer(m_Device, m_TransferBuffer);
+		}
 		SDL_ReleaseWindowFromGPUDevice(m_Device, m_Window);
 		SDL_DestroyGPUDevice(m_Device);
 		Log("SDL GPU Device destroyed");
@@ -95,7 +195,7 @@ namespace EngineZ
 		// Known: the picture freezes while a window border is held (Windows runs its own loop). 
 		// Fix later with SDL_AddEventWatch and SDL_EVENT_WINDOW_EXPOSED when the engine owns the main loop.
 
-		// Viewport and projection handling arrive in M4
+		// No projection yet, so anything drawn stretches with the window until the engine has its own matrix maths
 
 		m_CommandBuffer = SDL_AcquireGPUCommandBuffer(m_Device);
 
@@ -106,7 +206,7 @@ namespace EngineZ
 		}
 
 		SDL_GPUTexture* SwapChainTexture = nullptr;
-		Uint32 Width, Height;
+		Uint32 Width, Height = 0;
 
 		if(!SDL_WaitAndAcquireGPUSwapchainTexture(m_CommandBuffer, m_Window, &SwapChainTexture, &Width, &Height))
 		{
