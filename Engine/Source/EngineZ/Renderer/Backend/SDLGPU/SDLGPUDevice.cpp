@@ -106,10 +106,10 @@ namespace EngineZ
 
 	bool SDLGPUDevice::CreateVertexBuffer()
 	{
-		SDL_GPUBufferCreateInfo BufferInfo{};
-		BufferInfo.size = sizeof(Vertices);
-		BufferInfo.usage = SDL_GPU_BUFFERUSAGE_VERTEX;
-		m_VertexBuffer = SDL_CreateGPUBuffer(m_Device, &BufferInfo);
+		SDL_GPUBufferCreateInfo VertexBufferInfo{};
+		VertexBufferInfo.size = sizeof(Vertices);
+		VertexBufferInfo.usage = SDL_GPU_BUFFERUSAGE_VERTEX;
+		m_VertexBuffer = SDL_CreateGPUBuffer(m_Device, &VertexBufferInfo);
 		if(m_VertexBuffer == nullptr)
 		{
 			LogError(SDL_GetError());
@@ -151,10 +151,12 @@ namespace EngineZ
 			return false;
 		}
 
+		// Where the data is coming from
 		SDL_GPUTransferBufferLocation Location{};
 		Location.transfer_buffer = m_TransferBuffer;
 		Location.offset = 0;
 
+		// Where the data is going
 		SDL_GPUBufferRegion Region{};
 		Region.buffer = m_VertexBuffer;
 		Region.size = sizeof(Vertices);
