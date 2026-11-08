@@ -2,3 +2,4 @@
 * text=auto
 
 .githooks/* text eol=lf
+*.spv binary
