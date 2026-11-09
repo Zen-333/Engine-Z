@@ -26,6 +26,7 @@ namespace EngineZ
 
 		SDLGPUDevice(SDL_GPUDevice* InDevice, SDL_Window* InWindow);
 		bool CreateVertexBuffer();
+		bool CreatePipeline();
 
 		SDL_GPUDevice* m_Device = nullptr;
 		SDL_Window* m_Window = nullptr;

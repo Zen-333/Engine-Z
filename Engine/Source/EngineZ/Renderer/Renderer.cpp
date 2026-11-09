@@ -14,6 +14,12 @@ namespace EngineZ
 
 	}
 
+	bool Renderer::IsValid() const
+	{
+		if (m_Device == nullptr) return false;
+		return true;
+	}
+
 	bool Renderer::BeginFrame(const Color& ClearColor)
 	{
 		if(m_Device)

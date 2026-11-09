@@ -16,6 +16,12 @@ int main()
 	EngineZ::Window MainWindow("Sandbox Game", 640, 480);
 	EngineZ::Renderer MainRenderer(MainWindow);
 
+	if(!MainRenderer.IsValid())
+	{
+		EngineZ::LogError("Renderer failed to start");
+		return 1;
+	}
+
 	while(!MainWindow.ShouldClose())
 	{
 		MainWindow.PollEvents();

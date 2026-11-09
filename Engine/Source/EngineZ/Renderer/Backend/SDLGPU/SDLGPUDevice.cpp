@@ -48,6 +48,45 @@ namespace EngineZ
 		
 	}
 
+	static SDL_GPUShader* LoadShader(SDL_GPUDevice* Device, const std::string& FileName, SDL_GPUShaderStage Stage)
+	{
+		const char* BasePath = SDL_GetBasePath();
+		if(BasePath == nullptr)
+		{
+			LogError(SDL_GetError());
+			return nullptr;
+		}
+
+		const std::string Path = std::string(BasePath) + "Shaders/SPIRV/" + FileName;
+
+		size_t CodeSize = 0;
+		void* Code = SDL_LoadFile(Path.c_str(), &CodeSize);
+		if(Code == nullptr)
+		{
+			LogError(SDL_GetError());
+			return nullptr;
+		}
+
+		SDL_GPUShaderCreateInfo Info{};
+		Info.code = static_cast<const Uint8*>(Code);
+		Info.code_size = CodeSize;
+		Info.entrypoint = "main";
+		Info.format = SDL_GPU_SHADERFORMAT_SPIRV;
+		Info.stage = Stage;
+		SDL_GPUShader* Shader = SDL_CreateGPUShader(Device, &Info);
+
+		SDL_free(Code);
+
+		if(Shader == nullptr)
+		{
+			LogError(SDL_GetError());
+			return nullptr;
+		}
+
+		return Shader;
+
+	}
+
 	struct Vertex
 	{
 		float X, Y, Z;
@@ -95,7 +134,13 @@ namespace EngineZ
 			LogError("Vertex buffer couldn't be created");
 			return nullptr;
 		}
-		Log("Vertex buffer created");
+		if(!NewDevice->CreatePipeline())
+		{
+			LogError("Shaders couldn't be created");
+			return nullptr;
+		}
+
+		Log("Vertex buffer and shaders created");
 		return NewDevice;
 
 	}
@@ -177,6 +222,23 @@ namespace EngineZ
 		return true;
 	}
 
+	bool SDLGPUDevice::CreatePipeline()
+	{
+		SDL_GPUShader* VertexShader = LoadShader(m_Device, "Triangle.vert.spv", SDL_GPU_SHADERSTAGE_VERTEX);
+		if (VertexShader == nullptr) return false;
+
+		SDL_GPUShader* FragmentShader = LoadShader(m_Device, "Triangle.frag.spv", SDL_GPU_SHADERSTAGE_FRAGMENT);
+		if(FragmentShader == nullptr)
+		{
+			SDL_ReleaseGPUShader(m_Device, VertexShader);
+			return false;
+		}
+
+		SDL_ReleaseGPUShader(m_Device, VertexShader);
+		SDL_ReleaseGPUShader(m_Device, FragmentShader);
+		return true;
+	}
+
 	SDLGPUDevice::~SDLGPUDevice()
 	{
 		if(m_VertexBuffer)
@@ -208,7 +270,7 @@ namespace EngineZ
 		}
 
 		SDL_GPUTexture* SwapChainTexture = nullptr;
-		Uint32 Width, Height = 0;
+		Uint32 Width = 0, Height = 0;
 
 		if(!SDL_WaitAndAcquireGPUSwapchainTexture(m_CommandBuffer, m_Window, &SwapChainTexture, &Width, &Height))
 		{

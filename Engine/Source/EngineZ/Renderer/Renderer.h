@@ -16,6 +16,8 @@ namespace EngineZ
 		bool BeginFrame(const Color& ClearColor);
 		void EndFrame();
 
+		bool IsValid() const;
+
 	private:
 
 		std::unique_ptr<GraphicsDevice> m_Device;
