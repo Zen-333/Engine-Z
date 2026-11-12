@@ -4,6 +4,7 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_gpu.h>
 #include <string>
+#include <cstddef>
 
 namespace EngineZ
 {
@@ -234,13 +235,56 @@ namespace EngineZ
 			return false;
 		}
 
+		SDL_GPUVertexBufferDescription VertexBufferDescription{};
+		VertexBufferDescription.slot = 0;
+		VertexBufferDescription.pitch = static_cast<Uint32>(sizeof(Vertex));
+		VertexBufferDescription.input_rate = SDL_GPU_VERTEXINPUTRATE_VERTEX;
+		VertexBufferDescription.instance_step_rate = 0;
+
+		SDL_GPUVertexAttribute VertexAttributes[2]{};
+		VertexAttributes[0].location = 0;
+		VertexAttributes[0].buffer_slot = 0;
+		VertexAttributes[0].format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3;
+		VertexAttributes[0].offset = static_cast<Uint32>(offsetof(Vertex, X));
+		VertexAttributes[1].location = 1;
+		VertexAttributes[1].buffer_slot = 0;
+		VertexAttributes[1].format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4;
+		VertexAttributes[1].offset = static_cast<Uint32>(offsetof(Vertex, R));
+
+		SDL_GPUColorTargetDescription ColorTargetDescription{};
+		ColorTargetDescription.format = SDL_GetGPUSwapchainTextureFormat(m_Device, m_Window);
+
+		SDL_GPUGraphicsPipelineCreateInfo PipelineInfo{};
+		PipelineInfo.vertex_shader = VertexShader;
+		PipelineInfo.fragment_shader = FragmentShader;
+		PipelineInfo.primitive_type = SDL_GPU_PRIMITIVETYPE_TRIANGLELIST;
+		PipelineInfo.vertex_input_state.vertex_buffer_descriptions = &VertexBufferDescription;
+		PipelineInfo.vertex_input_state.num_vertex_buffers = 1;
+		PipelineInfo.vertex_input_state.vertex_attributes = VertexAttributes;
+		PipelineInfo.vertex_input_state.num_vertex_attributes = 2;
+		PipelineInfo.target_info.color_target_descriptions = &ColorTargetDescription;
+		PipelineInfo.target_info.num_color_targets = 1;
+
+		m_GraphicsPipeline = SDL_CreateGPUGraphicsPipeline(m_Device, &PipelineInfo);
+
 		SDL_ReleaseGPUShader(m_Device, VertexShader);
 		SDL_ReleaseGPUShader(m_Device, FragmentShader);
+
+		if(m_GraphicsPipeline == nullptr)
+		{
+			LogError(SDL_GetError());
+			return false;
+		}
+
 		return true;
 	}
 
 	SDLGPUDevice::~SDLGPUDevice()
 	{
+		if(m_GraphicsPipeline)
+		{
+			SDL_ReleaseGPUGraphicsPipeline(m_Device, m_GraphicsPipeline);
+		}
 		if(m_VertexBuffer)
 		{
 			SDL_ReleaseGPUBuffer(m_Device, m_VertexBuffer);

@@ -7,6 +7,7 @@ struct SDL_GPUCommandBuffer;
 struct SDL_GPURenderPass;
 struct SDL_GPUBuffer;
 struct SDL_GPUTransferBuffer;
+struct SDL_GPUGraphicsPipeline;
 
 namespace EngineZ
 {
@@ -34,5 +35,6 @@ namespace EngineZ
 		SDL_GPURenderPass* m_RenderPass = nullptr;
 		SDL_GPUBuffer* m_VertexBuffer = nullptr;
 		SDL_GPUTransferBuffer* m_TransferBuffer = nullptr;
+		SDL_GPUGraphicsPipeline* m_GraphicsPipeline = nullptr;
 	};
 }
