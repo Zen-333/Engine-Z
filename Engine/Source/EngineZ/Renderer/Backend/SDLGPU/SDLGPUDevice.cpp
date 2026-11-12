@@ -96,9 +96,9 @@ namespace EngineZ
 
 	static Vertex Vertices[]
 	{
-		{0.0f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f},    // Top vertex
-		{-0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f},  // Bottom left vertex
-		{0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f}    // Bottom right vertex
+		{0.0f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f},    // Top vertex
+		{-0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f},  // Bottom left vertex
+		{0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f}    // Bottom right vertex
 	};
 
 	std::unique_ptr<GraphicsDevice> SDLGPUDevice::Create(Window& InWindow)
