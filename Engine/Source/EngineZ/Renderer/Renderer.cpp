@@ -37,4 +37,12 @@ namespace EngineZ
 		}
 	}
 
+	void Renderer::DrawTestTriangle() 
+	{
+		if(m_Device)
+		{
+			m_Device->DrawTestTriangle();
+		}
+	}
+
 }

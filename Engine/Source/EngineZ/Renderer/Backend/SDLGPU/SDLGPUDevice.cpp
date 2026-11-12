@@ -150,6 +150,25 @@ namespace EngineZ
 	{
 	}
 
+	SDLGPUDevice::~SDLGPUDevice()
+	{
+		if(m_GraphicsPipeline)
+		{
+			SDL_ReleaseGPUGraphicsPipeline(m_Device, m_GraphicsPipeline);
+		}
+		if(m_VertexBuffer)
+		{
+			SDL_ReleaseGPUBuffer(m_Device, m_VertexBuffer);
+		}
+		if(m_TransferBuffer)
+		{
+			SDL_ReleaseGPUTransferBuffer(m_Device, m_TransferBuffer);
+		}
+		SDL_ReleaseWindowFromGPUDevice(m_Device, m_Window);
+		SDL_DestroyGPUDevice(m_Device);
+		Log("SDL GPU Device destroyed");
+	}
+
 	bool SDLGPUDevice::CreateVertexBuffer()
 	{
 		SDL_GPUBufferCreateInfo VertexBufferInfo{};
@@ -279,25 +298,6 @@ namespace EngineZ
 		return true;
 	}
 
-	SDLGPUDevice::~SDLGPUDevice()
-	{
-		if(m_GraphicsPipeline)
-		{
-			SDL_ReleaseGPUGraphicsPipeline(m_Device, m_GraphicsPipeline);
-		}
-		if(m_VertexBuffer)
-		{
-			SDL_ReleaseGPUBuffer(m_Device, m_VertexBuffer);
-		}
-		if(m_TransferBuffer)
-		{
-			SDL_ReleaseGPUTransferBuffer(m_Device, m_TransferBuffer);
-		}
-		SDL_ReleaseWindowFromGPUDevice(m_Device, m_Window);
-		SDL_DestroyGPUDevice(m_Device);
-		Log("SDL GPU Device destroyed");
-	}
-
 	bool SDLGPUDevice::BeginFrame(const Color& ClearColor)
 	{
 		// Known: the picture freezes while a window border is held (Windows runs its own loop). 
@@ -358,6 +358,21 @@ namespace EngineZ
 
 		m_RenderPass = nullptr;
 		m_CommandBuffer = nullptr;
+	}
+
+	void SDLGPUDevice::DrawTestTriangle()
+	{
+		if(m_RenderPass == nullptr || m_GraphicsPipeline == nullptr) return;
+	
+		SDL_BindGPUGraphicsPipeline(m_RenderPass, m_GraphicsPipeline);
+
+		SDL_GPUBufferBinding BufferBinding{};
+		BufferBinding.buffer = m_VertexBuffer;
+		BufferBinding.offset = 0;
+
+		SDL_BindGPUVertexBuffers(m_RenderPass, 0, &BufferBinding, 1);
+		SDL_DrawGPUPrimitives(m_RenderPass, 3, 1, 0, 0);
+
 	}
 
 }

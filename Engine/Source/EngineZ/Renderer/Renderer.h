@@ -16,6 +16,8 @@ namespace EngineZ
 		bool BeginFrame(const Color& ClearColor);
 		void EndFrame();
 
+		void DrawTestTriangle();
+
 		bool IsValid() const;
 
 	private:

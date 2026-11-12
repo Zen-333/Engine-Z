@@ -23,6 +23,8 @@ namespace EngineZ
 		bool BeginFrame(const Color& ClearColor) override;
 		void EndFrame() override;
 
+		virtual void DrawTestTriangle() override;
+
 	private:
 
 		SDLGPUDevice(SDL_GPUDevice* InDevice, SDL_Window* InWindow);
