@@ -18,7 +18,6 @@ int main()
 
 	if(!MainRenderer.IsValid())
 	{
-		EngineZ::LogError("Renderer failed to start");
 		return 1;
 	}
 

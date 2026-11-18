@@ -1,5 +1,5 @@
 #pragma once
-#include <EngineZ/Renderer/GraphicsDevice.h>
+#include <EngineZ/Renderer/IGraphicsDevice.h>
 
 namespace EngineZ
 {
@@ -13,16 +13,16 @@ namespace EngineZ
 		explicit Renderer(Window& MainWindow);
 		~Renderer();
 
-		bool BeginFrame(const Color& ClearColor);
+		[[nodiscard]] bool BeginFrame(const Color& ClearColor);
 		void EndFrame();
 
 		void DrawTestTriangle();
 
-		bool IsValid() const;
+		[[nodiscard]] bool IsValid() const;
 
 	private:
 
-		std::unique_ptr<GraphicsDevice> m_pDevice;
+		std::unique_ptr<IGraphicsDevice> m_pDevice;
 
 	};
 }

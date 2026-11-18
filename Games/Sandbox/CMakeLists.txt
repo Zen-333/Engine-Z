@@ -1,4 +1,4 @@
-add_executable(Sandbox Source/main.cpp )		# Build a program
+add_executable(Sandbox "Source/Main.cpp" )		# Build a program
 add_custom_target(CopyShaders                   # Runs every build
 	COMMAND ${CMAKE_COMMAND} -E rm -rf "$<TARGET_FILE_DIR:Sandbox>/Shaders"
 	COMMAND ${CMAKE_COMMAND} -E copy_directory

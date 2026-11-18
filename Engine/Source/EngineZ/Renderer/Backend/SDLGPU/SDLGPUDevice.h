@@ -1,5 +1,5 @@
 #pragma once
-#include <EngineZ/Renderer/GraphicsDevice.h>
+#include <EngineZ/Renderer/IGraphicsDevice.h>
 
 struct SDL_Window;
 struct SDL_GPUDevice;
@@ -12,11 +12,11 @@ struct SDL_GPUGraphicsPipeline;
 namespace EngineZ
 {
 
-	class SDLGPUDevice final : public GraphicsDevice
+	class SDLGPUDevice final : public IGraphicsDevice
 	{
 
 	public:
-		static std::unique_ptr<GraphicsDevice> Create(Window& MainWindow);
+		[[nodiscard]] static std::unique_ptr<IGraphicsDevice> Create(Window& MainWindow);
 
 		~SDLGPUDevice() override;
 
@@ -28,8 +28,8 @@ namespace EngineZ
 	private:
 
 		SDLGPUDevice(SDL_GPUDevice* Device, SDL_Window* MainWindow);
-		bool CreateVertexBuffer();
-		bool CreatePipeline();
+		[[nodiscard]] bool CreateVertexBuffer();
+		[[nodiscard]] bool CreatePipeline();
 
 		SDL_GPUDevice* m_pDevice = nullptr;
 		SDL_Window* m_pWindow = nullptr;

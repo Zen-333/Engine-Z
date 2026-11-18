@@ -10,8 +10,14 @@ namespace EngineZ
 {
 	struct Vertex
 	{
-		float X, Y, Z;
-		float R, G, B, A;
+		float X = 0;
+		float Y = 0;
+		float Z = 0;
+		float R = 0;
+		float G = 0;
+		float B = 0;
+		float A = 0;
+
 	};
 
 	static Vertex Vertices[]
@@ -61,61 +67,61 @@ namespace EngineZ
 		return Result;
 	}
 
-	static SDL_GPUShader* LoadShader(SDL_GPUDevice* Device, const std::string& FileName, SDL_GPUShaderStage Stage)
+	static SDL_GPUShader* LoadShader(SDL_GPUDevice* pDevice, const std::string& FileName, SDL_GPUShaderStage Stage)
 	{
-		const char* BasePath = SDL_GetBasePath();
-		if(BasePath == nullptr)
+		const char* pBasePath = SDL_GetBasePath();
+		if(pBasePath == nullptr)
 		{
 			LogError(SDL_GetError());
 			return nullptr;
 		}
 
-		const std::string Path = std::string(BasePath) + "Shaders/SPIRV/" + FileName;
+		const std::string Path = std::string(pBasePath) + "Shaders/SPIRV/" + FileName;
 
 		size_t CodeSize = 0;
-		void* Code = SDL_LoadFile(Path.c_str(), &CodeSize);
-		if(Code == nullptr)
+		void* pCode = SDL_LoadFile(Path.c_str(), &CodeSize);
+		if(pCode == nullptr)
 		{
 			LogError(SDL_GetError());
 			return nullptr;
 		}
 
 		SDL_GPUShaderCreateInfo Info{};
-		Info.code = static_cast<const Uint8*>(Code);
+		Info.code = static_cast<const Uint8*>(pCode);
 		Info.code_size = CodeSize;
 		Info.entrypoint = "main";
 		Info.format = SDL_GPU_SHADERFORMAT_SPIRV;
 		Info.stage = Stage;
-		SDL_GPUShader* Shader = SDL_CreateGPUShader(Device, &Info);
+		SDL_GPUShader* pShader = SDL_CreateGPUShader(pDevice, &Info);
 
-		SDL_free(Code);
+		SDL_free(pCode);
 
-		if(Shader == nullptr)
+		if(pShader == nullptr)
 		{
 			LogError(SDL_GetError());
 			return nullptr;
 		}
 
-		return Shader;
+		return pShader;
 	}
 
-	std::unique_ptr<GraphicsDevice> SDLGPUDevice::Create(Window& MainWindow)
+	std::unique_ptr<IGraphicsDevice> SDLGPUDevice::Create(Window& MainWindow)
 	{
 		#ifdef NDEBUG
-				const bool bDebugMode = false;
+				const bool bIsDebugMode = false;
 		#else
-				const bool bDebugMode = true;
+				const bool bIsDebugMode = true;
 		#endif
 
-		SDL_GPUDevice* Device = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV, bDebugMode, nullptr);
+		SDL_GPUDevice* Device = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV, bIsDebugMode, nullptr);
 		if(Device == nullptr)
 		{
 			LogError(SDL_GetError());
 			return nullptr;
 		}
 
-		SDL_Window* WindowHandle = MainWindow.GetSDLWindow();
-		if (!SDL_ClaimWindowForGPUDevice(Device, WindowHandle))
+		SDL_Window* pWindowHandle = MainWindow.GetSDLWindow();
+		if (!SDL_ClaimWindowForGPUDevice(Device, pWindowHandle))
 		{
 			LogError(SDL_GetError());
 			SDL_DestroyGPUDevice(Device);
@@ -126,21 +132,19 @@ namespace EngineZ
 		Log(std::string("GPU driver: ") + SDL_GetGPUDeviceDriver(Device));
 		Log("Shader formats: " + ShaderFormatsToString(SDL_GetGPUShaderFormats(Device)));
 
-		std::unique_ptr<SDLGPUDevice> NewDevice(new SDLGPUDevice(Device, WindowHandle));
+		std::unique_ptr<SDLGPUDevice> pNewDevice(new SDLGPUDevice(Device, pWindowHandle));
 
-		if(!NewDevice->CreateVertexBuffer())
+		if(!pNewDevice->CreateVertexBuffer())
 		{
-			LogError("Vertex buffer couldn't be created");
 			return nullptr;
 		}
-		if(!NewDevice->CreatePipeline())
+		if(!pNewDevice->CreatePipeline())
 		{
-			LogError("Shaders couldn't be created");
 			return nullptr;
 		}
 
 		Log("Vertex buffer and shaders created");
-		return NewDevice;
+		return pNewDevice;
 	}
 
 	SDLGPUDevice::SDLGPUDevice(SDL_GPUDevice* Device, SDL_Window* MainWindow) : m_pDevice(Device), m_pWindow(MainWindow)
@@ -182,10 +186,11 @@ namespace EngineZ
 			return false;
 		}
 
-		SDL_GPUTexture* SwapChainTexture = nullptr;
-		Uint32 Width = 0, Height = 0;
+		SDL_GPUTexture* pSwapChainTexture = nullptr;
+		Uint32 Width = 0;
+		Uint32 Height = 0;
 
-		if(!SDL_WaitAndAcquireGPUSwapchainTexture(m_pCommandBuffer, m_pWindow, &SwapChainTexture, &Width, &Height))
+		if(!SDL_WaitAndAcquireGPUSwapchainTexture(m_pCommandBuffer, m_pWindow, &pSwapChainTexture, &Width, &Height))
 		{
 			LogError(SDL_GetError());
 			SDL_SubmitGPUCommandBuffer(m_pCommandBuffer);
@@ -193,7 +198,7 @@ namespace EngineZ
 			return false;
 		}
 
-		if(SwapChainTexture == nullptr)
+		if(pSwapChainTexture == nullptr)
 		{
 			SDL_SubmitGPUCommandBuffer(m_pCommandBuffer);
 			m_pCommandBuffer = nullptr;
@@ -204,7 +209,7 @@ namespace EngineZ
 		ColorTargetInfo.clear_color = { ClearColor.R, ClearColor.G, ClearColor.B, ClearColor.A };
 		ColorTargetInfo.load_op = SDL_GPU_LOADOP_CLEAR;
 		ColorTargetInfo.store_op = SDL_GPU_STOREOP_STORE;
-		ColorTargetInfo.texture = SwapChainTexture;
+		ColorTargetInfo.texture = pSwapChainTexture;
 
 		m_pRenderPass = SDL_BeginGPURenderPass(m_pCommandBuffer, &ColorTargetInfo, 1, nullptr);
 
@@ -266,28 +271,28 @@ namespace EngineZ
 			return false;
 		}
 
-		void* Data = SDL_MapGPUTransferBuffer(m_pDevice, m_pTransferBuffer, false);
-		if (Data == nullptr)
+		void* pData = SDL_MapGPUTransferBuffer(m_pDevice, m_pTransferBuffer, false);
+		if (pData == nullptr)
 		{
 			LogError(SDL_GetError());
 			return false;
 		}
-		SDL_memcpy(Data, Vertices, sizeof(Vertices));
+		SDL_memcpy(pData, Vertices, sizeof(Vertices));
 
 		SDL_UnmapGPUTransferBuffer(m_pDevice, m_pTransferBuffer);
 
-		SDL_GPUCommandBuffer* CommandBuffer = SDL_AcquireGPUCommandBuffer(m_pDevice);
-		if (CommandBuffer == nullptr)
+		SDL_GPUCommandBuffer* pCommandBuffer = SDL_AcquireGPUCommandBuffer(m_pDevice);
+		if (pCommandBuffer == nullptr)
 		{
 			LogError(SDL_GetError());
 			return false;
 		}
 
-		SDL_GPUCopyPass* CopyPass = SDL_BeginGPUCopyPass(CommandBuffer);
-		if (CopyPass == nullptr)
+		SDL_GPUCopyPass* pCopyPass = SDL_BeginGPUCopyPass(pCommandBuffer);
+		if (pCopyPass == nullptr)
 		{
 			LogError(SDL_GetError());
-			SDL_CancelGPUCommandBuffer(CommandBuffer);
+			SDL_CancelGPUCommandBuffer(pCommandBuffer);
 			return false;
 		}
 
@@ -302,11 +307,11 @@ namespace EngineZ
 		Region.size = sizeof(Vertices);
 		Region.offset = 0;
 
-		SDL_UploadToGPUBuffer(CopyPass, &Location, &Region, true);
+		SDL_UploadToGPUBuffer(pCopyPass, &Location, &Region, true);
 
-		SDL_EndGPUCopyPass(CopyPass);
+		SDL_EndGPUCopyPass(pCopyPass);
 
-		if(!SDL_SubmitGPUCommandBuffer(CommandBuffer))
+		if(!SDL_SubmitGPUCommandBuffer(pCommandBuffer))
 		{
 			LogError(SDL_GetError());
 			return false;
@@ -319,13 +324,13 @@ namespace EngineZ
 
 	bool SDLGPUDevice::CreatePipeline()
 	{
-		SDL_GPUShader* VertexShader = LoadShader(m_pDevice, "Triangle.vert.spv", SDL_GPU_SHADERSTAGE_VERTEX);
-		if (VertexShader == nullptr) return false;
+		SDL_GPUShader* pVertexShader = LoadShader(m_pDevice, "Triangle.vert.spv", SDL_GPU_SHADERSTAGE_VERTEX);
+		if (pVertexShader == nullptr) return false;
 
-		SDL_GPUShader* FragmentShader = LoadShader(m_pDevice, "Triangle.frag.spv", SDL_GPU_SHADERSTAGE_FRAGMENT);
-		if(FragmentShader == nullptr)
+		SDL_GPUShader* pFragmentShader = LoadShader(m_pDevice, "Triangle.frag.spv", SDL_GPU_SHADERSTAGE_FRAGMENT);
+		if(pFragmentShader == nullptr)
 		{
-			SDL_ReleaseGPUShader(m_pDevice, VertexShader);
+			SDL_ReleaseGPUShader(m_pDevice, pVertexShader);
 			return false;
 		}
 
@@ -349,8 +354,8 @@ namespace EngineZ
 		ColorTargetDescription.format = SDL_GetGPUSwapchainTextureFormat(m_pDevice, m_pWindow);
 
 		SDL_GPUGraphicsPipelineCreateInfo PipelineInfo{};
-		PipelineInfo.vertex_shader = VertexShader;
-		PipelineInfo.fragment_shader = FragmentShader;
+		PipelineInfo.vertex_shader = pVertexShader;
+		PipelineInfo.fragment_shader = pFragmentShader;
 		PipelineInfo.primitive_type = SDL_GPU_PRIMITIVETYPE_TRIANGLELIST;
 		PipelineInfo.vertex_input_state.vertex_buffer_descriptions = &VertexBufferDescription;
 		PipelineInfo.vertex_input_state.num_vertex_buffers = 1;
@@ -361,8 +366,8 @@ namespace EngineZ
 
 		m_pGraphicsPipeline = SDL_CreateGPUGraphicsPipeline(m_pDevice, &PipelineInfo);
 
-		SDL_ReleaseGPUShader(m_pDevice, VertexShader);
-		SDL_ReleaseGPUShader(m_pDevice, FragmentShader);
+		SDL_ReleaseGPUShader(m_pDevice, pVertexShader);
+		SDL_ReleaseGPUShader(m_pDevice, pFragmentShader);
 
 		if(m_pGraphicsPipeline == nullptr)
 		{
