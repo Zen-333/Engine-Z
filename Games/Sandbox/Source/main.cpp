@@ -31,7 +31,5 @@ int main()
 		}
 		MainRenderer.DrawTestTriangle();
 		MainRenderer.EndFrame();
-		
 	}
-	
 }

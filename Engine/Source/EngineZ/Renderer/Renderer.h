@@ -10,7 +10,7 @@ namespace EngineZ
 
 	public:
 
-		explicit Renderer(Window& InWindow);
+		explicit Renderer(Window& MainWindow);
 		~Renderer();
 
 		bool BeginFrame(const Color& ClearColor);
@@ -22,7 +22,7 @@ namespace EngineZ
 
 	private:
 
-		std::unique_ptr<GraphicsDevice> m_Device;
+		std::unique_ptr<GraphicsDevice> m_pDevice;
 
 	};
 }

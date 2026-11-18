@@ -17,8 +17,8 @@ namespace EngineZ
 		}
 
 		SDL_WindowFlags WindowFlags = SDL_WINDOW_RESIZABLE;
-		m_Window = SDL_CreateWindow(WindowTitle, Width, Height, WindowFlags);
-		if(m_Window == nullptr)
+		m_pWindow = SDL_CreateWindow(WindowTitle, Width, Height, WindowFlags);
+		if(m_pWindow == nullptr)
 		{
 			LogError(SDL_GetError());
 			m_bCloseRequested = true;
@@ -31,9 +31,9 @@ namespace EngineZ
 
 	Window::~Window()
 	{
-		if(m_Window != nullptr)
+		if(m_pWindow != nullptr)
 		{
-			SDL_DestroyWindow(m_Window);
+			SDL_DestroyWindow(m_pWindow);
 		}
 		SDL_Quit();
 
@@ -45,16 +45,11 @@ namespace EngineZ
 		SDL_Event Event;
 		while(SDL_PollEvent(&Event))
 		{
-			if(Event.type == SDL_EVENT_QUIT )
-			{
-				m_bCloseRequested = true;
-			}
-			else if(Event.type == SDL_EVENT_KEY_DOWN && Event.key.key == SDLK_ESCAPE)
+			if(Event.type == SDL_EVENT_QUIT || (Event.type == SDL_EVENT_KEY_DOWN && Event.key.key == SDLK_ESCAPE))
 			{
 				m_bCloseRequested = true;
 			}
 		}
-	
 	}
 
 	bool Window::ShouldClose() const

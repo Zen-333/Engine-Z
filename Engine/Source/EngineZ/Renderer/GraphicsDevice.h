@@ -19,5 +19,5 @@ namespace EngineZ
 		virtual void DrawTestTriangle() = 0;
 	};
 
-	std::unique_ptr<GraphicsDevice> CreateGraphicsDevice(Window& InWindow);
+	std::unique_ptr<GraphicsDevice> CreateGraphicsDevice(Window& MainWindow);
 }

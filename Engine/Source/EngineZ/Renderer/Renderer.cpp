@@ -4,7 +4,7 @@
 
 namespace EngineZ
 {
-	Renderer::Renderer(Window& InWindow) : m_Device(CreateGraphicsDevice(InWindow))
+	Renderer::Renderer(Window& MainWindow) : m_pDevice(CreateGraphicsDevice(MainWindow))
 	{
 
 	}
@@ -14,35 +14,34 @@ namespace EngineZ
 
 	}
 
-	bool Renderer::IsValid() const
-	{
-		if (m_Device == nullptr) return false;
-		return true;
-	}
-
 	bool Renderer::BeginFrame(const Color& ClearColor)
 	{
-		if(m_Device)
+		if(m_pDevice)
 		{
-			return m_Device->BeginFrame(ClearColor);
+			return m_pDevice->BeginFrame(ClearColor);
 		}
 		return false;
 	}
 
 	void Renderer::EndFrame()
 	{
-		if(m_Device)
+		if(m_pDevice)
 		{
-			m_Device->EndFrame();
+			m_pDevice->EndFrame();
 		}
 	}
 
 	void Renderer::DrawTestTriangle() 
 	{
-		if(m_Device)
+		if(m_pDevice)
 		{
-			m_Device->DrawTestTriangle();
+			m_pDevice->DrawTestTriangle();
 		}
 	}
 
+	bool Renderer::IsValid() const
+	{
+		if (m_pDevice == nullptr) return false;
+		return true;
+	}
 }

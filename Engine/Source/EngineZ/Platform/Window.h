@@ -17,11 +17,11 @@ namespace EngineZ
 		void PollEvents();
 		bool ShouldClose() const;
 
-		inline SDL_Window* GetSDLWindow() const { return m_Window; }
+		inline SDL_Window* GetSDLWindow() const { return m_pWindow; }
 
 	private:
 
-		SDL_Window* m_Window = nullptr;
+		SDL_Window* m_pWindow = nullptr;
 		bool m_bCloseRequested = false;
 
 	};

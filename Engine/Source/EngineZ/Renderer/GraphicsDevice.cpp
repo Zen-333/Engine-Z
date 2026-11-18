@@ -3,8 +3,8 @@
 
 namespace EngineZ
 {
-	std::unique_ptr<GraphicsDevice> CreateGraphicsDevice(Window& InWindow)
+	std::unique_ptr<GraphicsDevice> CreateGraphicsDevice(Window& MainWindow)
 	{
-		return SDLGPUDevice::Create(InWindow);
+		return SDLGPUDevice::Create(MainWindow);
 	}
 }
