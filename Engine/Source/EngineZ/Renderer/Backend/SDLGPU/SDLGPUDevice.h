@@ -1,4 +1,5 @@
 #pragma once
+
 #include <EngineZ/Renderer/IGraphicsDevice.h>
 
 struct SDL_Window;
@@ -11,23 +12,36 @@ struct SDL_GPUGraphicsPipeline;
 
 namespace EngineZ
 {
-
 	class SDLGPUDevice final : public IGraphicsDevice
 	{
-
 	public:
-		[[nodiscard]] static std::unique_ptr<IGraphicsDevice> Create(Window& MainWindow);
 
+		// ---- LIFECYCLE ----
+
+		SDLGPUDevice(const SDLGPUDevice&) = delete;
+		SDLGPUDevice(SDLGPUDevice&&) = delete;
+		SDLGPUDevice& operator=(const SDLGPUDevice&) = delete;
+		SDLGPUDevice& operator=(SDLGPUDevice&&) = delete;
 		~SDLGPUDevice() override;
 
-		bool BeginFrame(const Color& ClearColor) override;
-		void EndFrame() override;
+		// ---- OVERRIDES ----
 
-		virtual void DrawTestTriangle() override;
+		[[nodiscard]] bool BeginFrame(const Color& ClearColor) override;
+		void EndFrame() override;
+		void DrawTestTriangle() override;
+
+		// ---- ACTIONS ----
+
+		[[nodiscard]] static std::unique_ptr<IGraphicsDevice> Create(Window& MainWindow);
 
 	private:
 
+		// ---- LIFECYCLE ----
+
 		SDLGPUDevice(SDL_GPUDevice* Device, SDL_Window* MainWindow);
+
+		// ---- HELPERS ----
+
 		[[nodiscard]] bool CreateVertexBuffer();
 		[[nodiscard]] bool CreatePipeline();
 

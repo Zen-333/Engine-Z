@@ -5,10 +5,8 @@
 
 namespace EngineZ
 {
-
 	Window::Window(const char* WindowTitle, const int Width, const int Height)
 	{
-
 		if(!SDL_Init(SDL_INIT_VIDEO))
 		{
 			LogError(SDL_GetError());
@@ -16,7 +14,7 @@ namespace EngineZ
 			return;
 		}
 
-		SDL_WindowFlags WindowFlags = SDL_WINDOW_RESIZABLE;
+		const SDL_WindowFlags WindowFlags = SDL_WINDOW_RESIZABLE;
 		m_pWindow = SDL_CreateWindow(WindowTitle, Width, Height, WindowFlags);
 		if(m_pWindow == nullptr)
 		{
@@ -26,7 +24,6 @@ namespace EngineZ
 		}
 
 		Log("SDL Window created");
-
 	}
 
 	Window::~Window()
@@ -34,6 +31,7 @@ namespace EngineZ
 		if(m_pWindow != nullptr)
 		{
 			SDL_DestroyWindow(m_pWindow);
+			m_pWindow = nullptr;
 		}
 		SDL_Quit();
 
@@ -56,5 +54,4 @@ namespace EngineZ
 	{
 		return m_bShouldClose;
 	}
-
 }

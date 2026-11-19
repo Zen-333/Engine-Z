@@ -4,6 +4,7 @@ struct SDL_Window;
 
 namespace EngineZ
 {
+	///  Owns the operating system window and its events.
 	class Window
 	{
 	public:
@@ -13,6 +14,8 @@ namespace EngineZ
 
 		Window(const Window&) = delete;
 		Window& operator=(const Window&) = delete;
+		Window(Window&&) = delete;
+		Window& operator=(Window&&) = delete;
 
 		void PollEvents();
 		[[nodiscard]] bool ShouldClose() const;
@@ -23,7 +26,5 @@ namespace EngineZ
 
 		SDL_Window* m_pWindow = nullptr;
 		bool m_bShouldClose = false;
-
 	};
-
 }

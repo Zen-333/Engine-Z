@@ -1,4 +1,5 @@
 #pragma once
+
 #include <memory>
 
 namespace EngineZ 
@@ -15,12 +16,13 @@ namespace EngineZ
 
 	class IGraphicsDevice
 	{
-	
 	public:
 
 		virtual ~IGraphicsDevice() = default;
 
-		virtual bool BeginFrame(const Color& ClearColor) = 0;
+		/// @return True when there is something to draw into. False when the window is minimised or the frame failed.
+		/// @note When this returns false, EndFrame is still safe to call and does nothing.
+		[[nodiscard]] virtual bool BeginFrame(const Color& ClearColor) = 0;
 		virtual void EndFrame() = 0;
 		virtual void DrawTestTriangle() = 0;
 	};

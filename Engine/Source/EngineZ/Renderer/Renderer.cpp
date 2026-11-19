@@ -1,31 +1,29 @@
 #include <EngineZ/Renderer/Renderer.h>
-#include <EngineZ/Core/Log.h>
-#include <EngineZ/Platform/Window.h>
 
 namespace EngineZ
 {
 	Renderer::Renderer(Window& MainWindow) : m_pDevice(CreateGraphicsDevice(MainWindow))
 	{
-
 	}
 
-	Renderer::~Renderer()
+	bool Renderer::IsValid() const
 	{
-
+		return m_pDevice != nullptr;
 	}
 
 	bool Renderer::BeginFrame(const Color& ClearColor)
 	{
-		if(m_pDevice)
+		if(m_pDevice == nullptr)
 		{
-			return m_pDevice->BeginFrame(ClearColor);
+			return false;
 		}
-		return false;
+
+		return m_pDevice->BeginFrame(ClearColor);
 	}
 
 	void Renderer::EndFrame()
 	{
-		if(m_pDevice)
+		if(m_pDevice != nullptr)
 		{
 			m_pDevice->EndFrame();
 		}
@@ -33,15 +31,9 @@ namespace EngineZ
 
 	void Renderer::DrawTestTriangle() 
 	{
-		if(m_pDevice)
+		if(m_pDevice != nullptr)
 		{
 			m_pDevice->DrawTestTriangle();
 		}
-	}
-
-	bool Renderer::IsValid() const
-	{
-		if (m_pDevice == nullptr) return false;
-		return true;
 	}
 }
