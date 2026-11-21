@@ -1,8 +1,11 @@
 # Engine Z Architecture
 
-Last updated: 3 November 2026
+Last updated: 21 November 2026
 
-This document describes how the Engine Z codebase is organised and the rules it follows. To build the project, see the root [README](../README.md). To add code, games or libraries, see [Extending.md](Extending.md). For how rendering is structured, see [Renderer.md](Renderer.md).
+This document describes how the Engine Z codebase is organised and the rules it follows. 
+To build the project, see the root [README](../README.md). 
+To add code, games or libraries, see [Extending.md](Extending.md). 
+For how rendering is structured, see [Renderer.md](Renderer.md).
 
 ## Overview
 
@@ -16,24 +19,26 @@ Current contents:
 
 * `Core/Log`: `EngineZ::Log(std::string_view)` prints `[Engine Z] Log: <message>` and `EngineZ::LogError(std::string_view)` prints `[Engine Z] ERROR: <message>`, both to standard output.
 * `Platform/Window`: owns the SDL window and event polling. The game calls `PollEvents()` once per frame and checks `ShouldClose()`. SDL stays inside `Window.cpp`.
-* `Renderer`: `Renderer` is what games call (`BeginFrame`, `EndFrame`). It owns a `GraphicsDevice`, an interface implemented by `Backend/SDLGPU`. Today it clears the window every frame. See [Renderer.md](Renderer.md).
+* `Renderer`: `Renderer` is what games call (`BeginFrame`, `EndFrame`). It owns an `IGraphicsDevice`, an interface implemented by `Backend/SDLGPU`. Today it draws one test triangle on a cleared window every frame. See [Renderer.md](Renderer.md).
 * `ThirdParty/SDL3`: SDL 3.4.18, used by `Platform/Window` and the SDL_GPU backend.
-* `Sandbox`: a small test game that opens a window and clears it every frame.
+* `Sandbox`: a small test game that opens a window and draws a test triangle every frame.
 
 ## Repository layout
 
 ```
 Engine-Z/
   README.md
+  Changelog.md
   .githooks/         commit checks for the architecture rules
   Engine/
     Source/EngineZ/
       Core/          logging and other foundation code
       Platform/      window and OS facing code (wraps SDL)
-      Renderer/      what games call, plus the GraphicsDevice interface
+      Renderer/      what games call, plus the IGraphicsDevice interface
         Backend/
           SDLGPU/    the only place SDL_GPU is used
     ThirdParty/      vendored libraries (SDL3)
+    Shaders/         GLSL source and the compiled SPIR-V files
   Games/
     Sandbox/         test game
   Docs/              all documentation except the root README
@@ -56,8 +61,8 @@ Inside the engine, dependencies only point down. `Platform` and `Renderer` use `
 
 ```
 Games/Sandbox  ->  EngineZ
-                     Renderer  ->  GraphicsDevice (interface)
-                     Renderer/Backend/SDLGPU  implements GraphicsDevice
+                     Renderer  ->  IGraphicsDevice (interface)
+                     Renderer/Backend/SDLGPU  implements IGraphicsDevice
                          ->  Platform, Core, SDL3 (private)
                      Platform  ->  Core, SDL3 (private)
 ```
@@ -73,6 +78,7 @@ The include and SDL rules above are checked on every commit by `.githooks/pre-co
   * `SDL3`: SDL's static library, created by SDL's own CMake files and used through the `SDL3::SDL3` target.
   * `EngineZ`: static library, built from the `.cpp` files listed in `Engine/CMakeLists.txt`. Its include folder `Source` is `PUBLIC`, so anything that links `EngineZ` can use `<EngineZ/...>` includes. It links `SDL3::SDL3` as `PRIVATE`, so only engine `.cpp` files can include SDL headers. Games cannot, and the compiler enforces this.
   * `Sandbox`: executable, links `EngineZ` as `PRIVATE`.
+  * `CopyShaders`: runs before every `Sandbox` build and copies `Engine/Shaders/Compiled` next to the executable, so the renderer can load the shaders at run time.
 
 ## Includes and naming
 
@@ -80,7 +86,7 @@ The include and SDL rules above are checked on every commit by `.githooks/pre-co
 * Third party headers are included with angle brackets, for example `#include <SDL3/SDL.h>`, and only inside engine `.cpp` files.
 * All code lives in the `EngineZ` namespace.
 * Headers use `.h` and sources use `.cpp`.
-* Files, folders, namespaces and functions use PascalCase (except for `main.cpp`).
+* Files, folders, namespaces and functions use PascalCase.
 * Spelling must match exactly everywhere (CMake files, includes, folder names), because Linux treats upper and lower case as different.
 
 ## Platform policy
@@ -112,4 +118,4 @@ Current libraries:
 
 * Engine modules are small and independent. A module may use modules below it, never above it.
 * Platform specific code is isolated in one place.
-* Rendering and physics sit behind engine interfaces, not behind a library's own types. The renderer already does this through `GraphicsDevice`.
+* Rendering and physics sit behind engine interfaces, not behind a library's own types. The renderer already does this through `IGraphicsDevice`.
