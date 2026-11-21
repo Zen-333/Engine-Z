@@ -1,6 +1,7 @@
 #pragma once
 
 #include <EngineZ/Renderer/IGraphicsDevice.h>
+#include <memory>
 
 struct SDL_Window;
 struct SDL_GPUDevice;
@@ -26,7 +27,7 @@ namespace EngineZ
 
 		// ---- OVERRIDES ----
 
-		[[nodiscard]] bool BeginFrame(const Color& ClearColor) override;
+		[[nodiscard]] bool BeginFrame(const Color ClearColor) override;
 		void EndFrame() override;
 		void DrawTestTriangle() override;
 

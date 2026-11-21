@@ -11,7 +11,7 @@ namespace EngineZ
 		return m_pDevice != nullptr;
 	}
 
-	bool Renderer::BeginFrame(const Color& ClearColor)
+	bool Renderer::BeginFrame(const Color ClearColor)
 	{
 		if(m_pDevice == nullptr)
 		{
@@ -29,7 +29,7 @@ namespace EngineZ
 		}
 	}
 
-	void Renderer::DrawTestTriangle() 
+	void Renderer::DrawTestTriangle()
 	{
 		if(m_pDevice != nullptr)
 		{

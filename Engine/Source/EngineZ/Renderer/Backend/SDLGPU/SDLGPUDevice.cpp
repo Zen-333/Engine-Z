@@ -7,57 +7,60 @@
 #include <SDL3/SDL_gpu.h>
 
 #include <array>
-#include <string>
+#include <assert.h>
 #include <cstddef>
+#include <string>
 
 namespace EngineZ
 {
-	struct Vertex
+	namespace
 	{
-		float X = 0.0f;
-		float Y = 0.0f;
-		float Z = 0.0f;
-		float R = 0.0f;
-		float G = 0.0f;
-		float B = 0.0f;
-		float A = 0.0f;
-
-	};
-
-	constexpr std::array<Vertex, 3> TRIANGLE_VERTICES
-	{
+		struct Vertex
 		{
-			{.X = 0.0f, .Y = 0.5f, .Z = 0.0f, .R = 0.0f, .G = 0.0f, .B = 1.0f, .A = 1.0f},    // Top vertex
-			{.X = -0.5f, .Y = -0.5f, .Z = 0.0f, .R = 0.0f, .G = 1.0f, .B = 0.0f, .A = 1.0f},  // Bottom left vertex
-			{.X = 0.5f, .Y = -0.5f, .Z = 0.0f, .R = 1.0f, .G = 0.0f, .B = 0.0f, .A = 1.0f}    // Bottom right vertex
-		}
-	};
+			float X = 0.0f;
+			float Y = 0.0f;
+			float Z = 0.0f;
+			float R = 0.0f;
+			float G = 0.0f;
+			float B = 0.0f;
+			float A = 0.0f;
+		};
 
-	constexpr Uint32 TRIANGLE_VERTEX_COUNT = static_cast<Uint32>(TRIANGLE_VERTICES.size());
-	constexpr Uint32 TRIANGLE_DATA_SIZE = static_cast<Uint32>(sizeof(TRIANGLE_VERTICES));
-
-	struct FormatName 
-	{
-		SDL_GPUShaderFormat Flag = SDL_GPU_SHADERFORMAT_INVALID;
-		const char* Name = nullptr;
-	};
-
-	constexpr std::array<FormatName, 5> FORMAT_NAMES =
-	{
+		constexpr std::array<Vertex, 3> TRIANGLE_VERTICES
 		{
-			{ .Flag = SDL_GPU_SHADERFORMAT_SPIRV,    .Name = "SPIR-V"   },
-			{ .Flag = SDL_GPU_SHADERFORMAT_DXBC,     .Name = "DXBC"     },
-			{ .Flag = SDL_GPU_SHADERFORMAT_DXIL,     .Name = "DXIL"     },
-			{ .Flag = SDL_GPU_SHADERFORMAT_MSL,      .Name = "MSL"      },
-			{ .Flag = SDL_GPU_SHADERFORMAT_METALLIB, .Name = "METALLIB" },
-		}
-	};
+			{
+				{.X = 0.0f, .Y = 0.5f, .Z = 0.0f, .R = 0.0f, .G = 0.0f, .B = 1.0f, .A = 1.0f},    // Top vertex
+				{.X = -0.5f, .Y = -0.5f, .Z = 0.0f, .R = 0.0f, .G = 1.0f, .B = 0.0f, .A = 1.0f},  // Bottom left vertex
+				{.X = 0.5f, .Y = -0.5f, .Z = 0.0f, .R = 1.0f, .G = 0.0f, .B = 0.0f, .A = 1.0f}    // Bottom right vertex
+			}
+		};
+
+		constexpr Uint32 TRIANGLE_VERTEX_COUNT = static_cast<Uint32>(TRIANGLE_VERTICES.size());
+		constexpr Uint32 TRIANGLE_DATA_SIZE = static_cast<Uint32>(sizeof(TRIANGLE_VERTICES));
+
+		struct FormatName
+		{
+			SDL_GPUShaderFormat Flag = SDL_GPU_SHADERFORMAT_INVALID;
+			const char* Name = nullptr;
+		};
+
+		constexpr std::array<FormatName, 5> FORMAT_NAMES =
+		{
+			{
+				{ .Flag = SDL_GPU_SHADERFORMAT_SPIRV,    .Name = "SPIR-V"   },
+				{ .Flag = SDL_GPU_SHADERFORMAT_DXBC,     .Name = "DXBC"     },
+				{ .Flag = SDL_GPU_SHADERFORMAT_DXIL,     .Name = "DXIL"     },
+				{ .Flag = SDL_GPU_SHADERFORMAT_MSL,      .Name = "MSL"      },
+				{ .Flag = SDL_GPU_SHADERFORMAT_METALLIB, .Name = "METALLIB" },
+			}
+		};
+	}
 
 	static std::string ShaderFormatsToString(const SDL_GPUShaderFormat Format)
 	{
 		std::string Result;
 
-		for (const FormatName& Entry : FORMAT_NAMES)
+		for(const FormatName& Entry : FORMAT_NAMES)
 		{	
 			if(Entry.Flag & Format)
 			{
@@ -79,6 +82,10 @@ namespace EngineZ
 
 	static SDL_GPUShader* LoadShader(SDL_GPUDevice* pDevice, const std::string& FileName, SDL_GPUShaderStage Stage)
 	{
+		if(pDevice == nullptr)
+		{
+			assert("Device provided to Renderer is null");
+		}
 		const char* pBasePath = SDL_GetBasePath();
 		if(pBasePath == nullptr)
 		{
@@ -120,6 +127,10 @@ namespace EngineZ
 	SDLGPUDevice::SDLGPUDevice(SDL_GPUDevice* Device, SDL_Window* MainWindow)
 		: m_pDevice(Device), m_pWindow(MainWindow)
 	{
+		if(m_pDevice == nullptr || m_pWindow == nullptr)
+		{
+			assert("Device and /or window provided to Renderer is null");
+		}
 	}
 
 	SDLGPUDevice::~SDLGPUDevice()
@@ -140,17 +151,20 @@ namespace EngineZ
 		SDL_ReleaseWindowFromGPUDevice(m_pDevice, m_pWindow);
 		SDL_DestroyGPUDevice(m_pDevice);
 		m_pDevice = nullptr;
+		m_pGraphicsPipeline = nullptr;
+		m_pVertexBuffer = nullptr;
+		m_pTransferBuffer = nullptr;
 		Log("SDL GPU Device destroyed");
 	}
 
 	// ---- OVERRIDES ----
 
-	bool SDLGPUDevice::BeginFrame(const Color& ClearColor)
+	bool SDLGPUDevice::BeginFrame(const Color ClearColor)
 	{
-		// Known: the picture freezes while a window border is held (Windows runs its own loop). 
+		// TODO: the picture freezes while a window border is held (Windows runs its own loop). 
 		// Fix later with SDL_AddEventWatch and SDL_EVENT_WINDOW_EXPOSED when the engine owns the main loop.
 
-		// No projection yet, so anything drawn stretches with the window until the engine has its own matrix maths
+		// No projection yet, so anything drawn stretches with the window until the engine has its own matrix maths.
 
 		m_pCommandBuffer = SDL_AcquireGPUCommandBuffer(m_pDevice);
 
@@ -225,7 +239,7 @@ namespace EngineZ
 		BufferBinding.offset = 0;
 
 		SDL_BindGPUVertexBuffers(m_pRenderPass, 0, &BufferBinding, 1);
-		SDL_DrawGPUPrimitives(m_pRenderPass, 3, 1, 0, 0);
+		SDL_DrawGPUPrimitives(m_pRenderPass, TRIANGLE_VERTEX_COUNT, 1, 0, 0);
 
 	}
 
@@ -239,26 +253,26 @@ namespace EngineZ
 				const bool bIsDebugMode = true;
 		#endif
 
-		SDL_GPUDevice* Device = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV, bIsDebugMode, nullptr);
-		if(Device == nullptr)
+		SDL_GPUDevice* pDevice = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV, bIsDebugMode, nullptr);
+		if(pDevice == nullptr)
 		{
 			LogError(SDL_GetError());
 			return nullptr;
 		}
 
 		SDL_Window* pWindowHandle = MainWindow.GetSDLWindow();
-		if (!SDL_ClaimWindowForGPUDevice(Device, pWindowHandle))
+		if(!SDL_ClaimWindowForGPUDevice(pDevice, pWindowHandle))
 		{
 			LogError(SDL_GetError());
-			SDL_DestroyGPUDevice(Device);
+			SDL_DestroyGPUDevice(pDevice);
 			return nullptr;
 		}
 
 		Log("SDL GPU Device created");
-		Log(std::string("GPU driver: ") + SDL_GetGPUDeviceDriver(Device));
-		Log("Shader formats: " + ShaderFormatsToString(SDL_GetGPUShaderFormats(Device)));
+		Log(std::string("GPU driver: ") + SDL_GetGPUDeviceDriver(pDevice));
+		Log("Shader formats: " + ShaderFormatsToString(SDL_GetGPUShaderFormats(pDevice)));
 
-		std::unique_ptr<SDLGPUDevice> pNewDevice(new SDLGPUDevice(Device, pWindowHandle));
+		std::unique_ptr<SDLGPUDevice> pNewDevice(new SDLGPUDevice(pDevice, pWindowHandle));
 
 		if(!pNewDevice->CreateVertexBuffer())
 		{
@@ -291,14 +305,14 @@ namespace EngineZ
 		TransferInfo.size = TRIANGLE_DATA_SIZE;
 		TransferInfo.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
 		m_pTransferBuffer = SDL_CreateGPUTransferBuffer(m_pDevice, &TransferInfo);
-		if (m_pTransferBuffer == nullptr)
+		if(m_pTransferBuffer == nullptr)
 		{
 			LogError(SDL_GetError());
 			return false;
 		}
 
 		void* pData = SDL_MapGPUTransferBuffer(m_pDevice, m_pTransferBuffer, false);
-		if (pData == nullptr)
+		if(pData == nullptr)
 		{
 			LogError(SDL_GetError());
 			return false;
@@ -308,26 +322,26 @@ namespace EngineZ
 		SDL_UnmapGPUTransferBuffer(m_pDevice, m_pTransferBuffer);
 
 		SDL_GPUCommandBuffer* pCommandBuffer = SDL_AcquireGPUCommandBuffer(m_pDevice);
-		if (pCommandBuffer == nullptr)
+		if(pCommandBuffer == nullptr)
 		{
 			LogError(SDL_GetError());
 			return false;
 		}
 
 		SDL_GPUCopyPass* pCopyPass = SDL_BeginGPUCopyPass(pCommandBuffer);
-		if (pCopyPass == nullptr)
+		if(pCopyPass == nullptr)
 		{
 			LogError(SDL_GetError());
 			SDL_CancelGPUCommandBuffer(pCommandBuffer);
 			return false;
 		}
 
-		/// Where the data is coming from
+		// Where the data is coming from
 		SDL_GPUTransferBufferLocation Location{};
 		Location.transfer_buffer = m_pTransferBuffer;
 		Location.offset = 0;
 
-		/// Where the data is going
+		// Where the data is going
 		SDL_GPUBufferRegion Region{};
 		Region.buffer = m_pVertexBuffer;
 		Region.size = TRIANGLE_DATA_SIZE;
@@ -351,7 +365,10 @@ namespace EngineZ
 	bool SDLGPUDevice::CreatePipeline()
 	{
 		SDL_GPUShader* pVertexShader = LoadShader(m_pDevice, "Triangle.vert.spv", SDL_GPU_SHADERSTAGE_VERTEX);
-		if (pVertexShader == nullptr) return false;
+		if(pVertexShader == nullptr)
+		{
+			return false;
+		}
 
 		SDL_GPUShader* pFragmentShader = LoadShader(m_pDevice, "Triangle.frag.spv", SDL_GPU_SHADERSTAGE_FRAGMENT);
 		if(pFragmentShader == nullptr)

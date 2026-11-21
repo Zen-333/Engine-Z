@@ -4,7 +4,7 @@ struct SDL_Window;
 
 namespace EngineZ
 {
-	///  Owns the operating system window and its events.
+	/// Owns the operating system window and its events.
 	class Window
 	{
 	public:

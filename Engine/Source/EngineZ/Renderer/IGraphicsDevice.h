@@ -2,14 +2,14 @@
 
 #include <memory>
 
-namespace EngineZ 
+namespace EngineZ
 {
 	struct Color
 	{
-		float R = 0;
-		float G = 0;
-		float B = 0;
-		float A = 0;
+		float R = 0.0f;
+		float G = 0.0f;
+		float B = 0.0f;
+		float A = 0.0f;
 	};
 
 	class Window;
@@ -22,7 +22,7 @@ namespace EngineZ
 
 		/// @return True when there is something to draw into. False when the window is minimised or the frame failed.
 		/// @note When this returns false, EndFrame is still safe to call and does nothing.
-		[[nodiscard]] virtual bool BeginFrame(const Color& ClearColor) = 0;
+		[[nodiscard]] virtual bool BeginFrame(const Color ClearColor) = 0;
 		virtual void EndFrame() = 0;
 		virtual void DrawTestTriangle() = 0;
 	};

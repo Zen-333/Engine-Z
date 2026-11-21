@@ -1,6 +1,7 @@
 #pragma once
 
 #include <EngineZ/Renderer/IGraphicsDevice.h>
+#include <memory>
 
 namespace EngineZ
 {
@@ -13,7 +14,7 @@ namespace EngineZ
 		explicit Renderer(Window& MainWindow);
 
 		[[nodiscard]] bool IsValid() const;
-		[[nodiscard]] bool BeginFrame(const Color& ClearColor);
+		[[nodiscard]] bool BeginFrame(const Color ClearColor);
 		void EndFrame();
 
 		void DrawTestTriangle();
