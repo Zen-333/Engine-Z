@@ -33,6 +33,8 @@ namespace EngineZ
 
 		// ---- ACTIONS ----
 
+		/// @return The device, or nullptr if any step failed. The reason is logged and anything
+		/// already created is released.
 		[[nodiscard]] static std::unique_ptr<IGraphicsDevice> Create(Window& MainWindow);
 
 	private:

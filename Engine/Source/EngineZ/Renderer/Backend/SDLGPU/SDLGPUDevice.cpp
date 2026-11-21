@@ -7,7 +7,7 @@
 #include <SDL3/SDL_gpu.h>
 
 #include <array>
-#include <assert.h>
+#include <cassert>
 #include <cstddef>
 #include <string>
 
@@ -54,83 +54,80 @@ namespace EngineZ
 				{ .Flag = SDL_GPU_SHADERFORMAT_METALLIB, .Name = "METALLIB" },
 			}
 		};
-	}
 
-	static std::string ShaderFormatsToString(const SDL_GPUShaderFormat Format)
-	{
-		std::string Result;
+		std::string ShaderFormatsToString(const SDL_GPUShaderFormat Format)
+		{
+			std::string Result;
 
-		for(const FormatName& Entry : FORMAT_NAMES)
-		{	
-			if(Entry.Flag & Format)
-			{
-				if(!Result.empty())
+			for(const FormatName& Entry : FORMAT_NAMES)
+			{	
+				if(Entry.Flag & Format)
 				{
-					Result += " | ";
+					if(!Result.empty())
+					{
+						Result += " | ";
+					}
+					Result += Entry.Name;
 				}
-				Result += Entry.Name;
 			}
+
+			if(Result.empty())
+			{
+				Result = "The device reported no formats I know about";
+			}
+
+			return Result;
 		}
 
-		if(Result.empty())
+		SDL_GPUShader* LoadShader(SDL_GPUDevice* pDevice, const std::string& FileName, SDL_GPUShaderStage Stage)
 		{
-			Result = "The device reported no formats I know about";
-		}
+			assert(pDevice != nullptr && "LoadShader needs a device");
 
-		return Result;
+			const char* pBasePath = SDL_GetBasePath();
+			if(pBasePath == nullptr)
+			{
+				LogError(SDL_GetError());
+				return nullptr;
+			}
+
+			const std::string Path = std::string(pBasePath) + "Shaders/SPIRV/" + FileName;
+
+			size_t CodeSize = 0;
+			void* pCode = SDL_LoadFile(Path.c_str(), &CodeSize);
+			if(pCode == nullptr)
+			{
+				LogError(SDL_GetError());
+				return nullptr;
+			}
+
+			SDL_GPUShaderCreateInfo Info{};
+			Info.code = static_cast<const Uint8*>(pCode);
+			Info.code_size = CodeSize;
+			Info.entrypoint = "main";
+			Info.format = SDL_GPU_SHADERFORMAT_SPIRV;
+			Info.stage = Stage;
+			SDL_GPUShader* pShader = SDL_CreateGPUShader(pDevice, &Info);
+
+			SDL_free(pCode);
+
+			if(pShader == nullptr)
+			{
+				LogError(SDL_GetError());
+				return nullptr;
+			}
+
+			return pShader;
+		}
 	}
 
-	static SDL_GPUShader* LoadShader(SDL_GPUDevice* pDevice, const std::string& FileName, SDL_GPUShaderStage Stage)
-	{
-		if(pDevice == nullptr)
-		{
-			assert("Device provided to Renderer is null");
-		}
-		const char* pBasePath = SDL_GetBasePath();
-		if(pBasePath == nullptr)
-		{
-			LogError(SDL_GetError());
-			return nullptr;
-		}
-
-		const std::string Path = std::string(pBasePath) + "Shaders/SPIRV/" + FileName;
-
-		size_t CodeSize = 0;
-		void* pCode = SDL_LoadFile(Path.c_str(), &CodeSize);
-		if(pCode == nullptr)
-		{
-			LogError(SDL_GetError());
-			return nullptr;
-		}
-
-		SDL_GPUShaderCreateInfo Info{};
-		Info.code = static_cast<const Uint8*>(pCode);
-		Info.code_size = CodeSize;
-		Info.entrypoint = "main";
-		Info.format = SDL_GPU_SHADERFORMAT_SPIRV;
-		Info.stage = Stage;
-		SDL_GPUShader* pShader = SDL_CreateGPUShader(pDevice, &Info);
-
-		SDL_free(pCode);
-
-		if(pShader == nullptr)
-		{
-			LogError(SDL_GetError());
-			return nullptr;
-		}
-
-		return pShader;
-	}
 
 	// ---- LIFECYCLE ----
 
 	SDLGPUDevice::SDLGPUDevice(SDL_GPUDevice* Device, SDL_Window* MainWindow)
 		: m_pDevice(Device), m_pWindow(MainWindow)
 	{
-		if(m_pDevice == nullptr || m_pWindow == nullptr)
-		{
-			assert("Device and /or window provided to Renderer is null");
-		}
+		assert(m_pDevice != nullptr && "SDLGPUDevice needs a device");
+		assert(m_pWindow != nullptr && "SDLGPUDevice needs a window");
 	}
 
 	SDLGPUDevice::~SDLGPUDevice()
@@ -213,7 +210,7 @@ namespace EngineZ
 
 	void SDLGPUDevice::EndFrame()
 	{
-		if (m_pRenderPass == nullptr)
+		if(m_pRenderPass == nullptr)
 		{
 			return;
 		}
@@ -272,7 +269,7 @@ namespace EngineZ
 		Log(std::string("GPU driver: ") + SDL_GetGPUDeviceDriver(pDevice));
 		Log("Shader formats: " + ShaderFormatsToString(SDL_GetGPUShaderFormats(pDevice)));
 
-		std::unique_ptr<SDLGPUDevice> pNewDevice(new SDLGPUDevice(pDevice, pWindowHandle));
+		auto pNewDevice = std::make_unique<SDLGPUDevice>(pDevice, pWindowHandle);
 
 		if(!pNewDevice->CreateVertexBuffer())
 		{
@@ -383,7 +380,7 @@ namespace EngineZ
 		VertexBufferDescription.input_rate = SDL_GPU_VERTEXINPUTRATE_VERTEX;
 		VertexBufferDescription.instance_step_rate = 0;
 
-		SDL_GPUVertexAttribute VertexAttributes[2]{};
+		std::array<SDL_GPUVertexAttribute, 2> VertexAttributes{};
 		VertexAttributes[0].location = 0;
 		VertexAttributes[0].buffer_slot = 0;
 		VertexAttributes[0].format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3;
@@ -402,8 +399,8 @@ namespace EngineZ
 		PipelineInfo.primitive_type = SDL_GPU_PRIMITIVETYPE_TRIANGLELIST;
 		PipelineInfo.vertex_input_state.vertex_buffer_descriptions = &VertexBufferDescription;
 		PipelineInfo.vertex_input_state.num_vertex_buffers = 1;
-		PipelineInfo.vertex_input_state.vertex_attributes = VertexAttributes;
-		PipelineInfo.vertex_input_state.num_vertex_attributes = 2;
+		PipelineInfo.vertex_input_state.vertex_attributes = VertexAttributes.data();
+		PipelineInfo.vertex_input_state.num_vertex_attributes = static_cast<Uint32>(VertexAttributes.size());
 		PipelineInfo.target_info.color_target_descriptions = &ColorTargetDescription;
 		PipelineInfo.target_info.num_color_targets = 1;
 

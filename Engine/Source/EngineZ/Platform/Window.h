@@ -9,6 +9,8 @@ namespace EngineZ
 	{
 	public:
 
+		/// @note If SDL or the window cannot be created, the error is logged, ShouldClose returns true
+		/// and GetSDLWindow returns nullptr.
 		Window(const char* WindowTitle, const int Width, const int Height);
 		~Window();
 

@@ -24,7 +24,7 @@ int main()
 	while(!MainWindow.ShouldClose())
 	{
 		MainWindow.PollEvents();
-		if(!MainRenderer.BeginFrame({ 11.0f/255.0f,111.0f/255.0f,1.0f,1.0f }))
+		if(!MainRenderer.BeginFrame({ .R = 11.0f / 255.0f, .G = 111.0f / 255.0f, .B = 1.0f, .A = 1.0f }))
 		{
 			std::this_thread::sleep_for(std::chrono::milliseconds(16));
 		}

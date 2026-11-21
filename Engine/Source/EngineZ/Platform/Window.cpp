@@ -1,6 +1,7 @@
 #include <EngineZ/Platform/Window.h>
 
 #include <EngineZ/Core/Log.h>
+
 #include <SDL3/SDL.h>
 
 namespace EngineZ

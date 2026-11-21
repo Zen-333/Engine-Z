@@ -27,5 +27,6 @@ namespace EngineZ
 		virtual void DrawTestTriangle() = 0;
 	};
 
+	/// @return The device for the chosen backend, or nullptr if it could not be created. The reason is logged.
 	[[nodiscard]] std::unique_ptr<IGraphicsDevice> CreateGraphicsDevice(Window& MainWindow);
 }

@@ -11,8 +11,11 @@ namespace EngineZ
 	{
 	public:
 
+		/// @note If the graphics device cannot be created, the reason is logged and IsValid returns false.
 		explicit Renderer(Window& MainWindow);
 
+		/// @return False when the graphics device could not be created. BeginFrame then returns false
+		/// and every other Renderer function does nothing.
 		[[nodiscard]] bool IsValid() const;
 		[[nodiscard]] bool BeginFrame(const Color ClearColor);
 		void EndFrame();
