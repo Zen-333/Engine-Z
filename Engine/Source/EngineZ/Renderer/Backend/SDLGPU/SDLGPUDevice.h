@@ -19,6 +19,7 @@ namespace EngineZ
 
 		// ---- LIFECYCLE ----
 
+		SDLGPUDevice(SDL_GPUDevice* Device, SDL_Window* MainWindow);
 		SDLGPUDevice(const SDLGPUDevice&) = delete;
 		SDLGPUDevice(SDLGPUDevice&&) = delete;
 		SDLGPUDevice& operator=(const SDLGPUDevice&) = delete;
@@ -38,10 +39,6 @@ namespace EngineZ
 		[[nodiscard]] static std::unique_ptr<IGraphicsDevice> Create(Window& MainWindow);
 
 	private:
-
-		// ---- LIFECYCLE ----
-
-		SDLGPUDevice(SDL_GPUDevice* Device, SDL_Window* MainWindow);
 
 		// ---- HELPERS ----
 

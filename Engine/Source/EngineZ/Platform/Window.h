@@ -12,12 +12,11 @@ namespace EngineZ
 		/// @note If SDL or the window cannot be created, the error is logged, ShouldClose returns true
 		/// and GetSDLWindow returns nullptr.
 		Window(const char* WindowTitle, const int Width, const int Height);
-		~Window();
-
 		Window(const Window&) = delete;
 		Window& operator=(const Window&) = delete;
 		Window(Window&&) = delete;
 		Window& operator=(Window&&) = delete;
+		~Window();
 
 		void PollEvents();
 		[[nodiscard]] bool ShouldClose() const;

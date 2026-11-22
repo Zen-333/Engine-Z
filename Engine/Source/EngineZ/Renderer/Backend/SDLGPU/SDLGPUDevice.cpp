@@ -79,9 +79,9 @@ namespace EngineZ
 			return Result;
 		}
 
-		SDL_GPUShader* LoadShader(SDL_GPUDevice* pDevice, const std::string& FileName, SDL_GPUShaderStage Stage)
+		SDL_GPUShader* LoadShader(SDL_GPUDevice* Device, const std::string& FileName, SDL_GPUShaderStage Stage)
 		{
-			assert(pDevice != nullptr && "LoadShader needs a device");
+			assert(Device != nullptr && "LoadShader needs a device");
 
 			const char* pBasePath = SDL_GetBasePath();
 			if(pBasePath == nullptr)
@@ -106,7 +106,7 @@ namespace EngineZ
 			Info.entrypoint = "main";
 			Info.format = SDL_GPU_SHADERFORMAT_SPIRV;
 			Info.stage = Stage;
-			SDL_GPUShader* pShader = SDL_CreateGPUShader(pDevice, &Info);
+			SDL_GPUShader* pShader = SDL_CreateGPUShader(Device, &Info);
 
 			SDL_free(pCode);
 
